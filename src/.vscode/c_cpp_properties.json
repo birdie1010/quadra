@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/mkris/catkin_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/mkris/catkin_ws/src/beginner_tutorials/include/**",
+        "/home/mkris/catkin_ws/src/learning_tf2/include/**",
+        "/home/mkris/catkin_ws/src/pid/include/**",
+        "/home/mkris/catkin_ws/src/pwm/include/**",
+        "/home/mkris/catkin_ws/src/robo23/include/**",
+        "/home/mkris/catkin_ws/src/rosserial/rosserial_server/include/**",
+        "/home/mkris/catkin_ws/src/rosserial/rosserial_test/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
