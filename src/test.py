@@ -40,7 +40,7 @@ class legjoints:
 # print(point_finder('circle',(1,1),2,5))
     def inv_kin_list(self):
         angles=[]
-        for i in range(len(points)-1):
+        for i in range(len(self.points)-1):
             angles.append(self.inv_kin_single(self.points[i]))
         self.angles=angles
 joint=legjoints()
