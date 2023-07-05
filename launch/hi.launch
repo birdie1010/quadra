@@ -1,6 +1,6 @@
 <launch>
    <!-- Load the urdf into the parameter server. -->
-   <param name="robot_description" textfile="$(find testbot_description)/urdf/me.urdf"/>
+   <param name="robot_description" textfile="$(find testbot_description)/urdf/auto.urdf"/>
     <node pkg="testbot_description" type="mie.py" name="joint_st_pub">
         
     </node>

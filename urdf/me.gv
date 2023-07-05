@@ -1,0 +1,32 @@
+digraph G {
+node [shape=box];
+"map" [label="map"];
+"chassis" [label="chassis"];
+"leg_1" [label="leg_1"];
+"ankle_1" [label="ankle_1"];
+"leg_2" [label="leg_2"];
+"ankle_2" [label="ankle_2"];
+"leg_3" [label="leg_3"];
+"ankle_3" [label="ankle_3"];
+"leg_4" [label="leg_4"];
+"ankle_4" [label="ankle_4"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"map" -> "fixed" [label="xyz: 0 0 0 \nrpy: 0 -0 0"]
+"fixed" -> "chassis"
+"chassis" -> "rota_1" [label="xyz: 5 5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
+"rota_1" -> "leg_1"
+"leg_1" -> "knee_1" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
+"knee_1" -> "ankle_1"
+"chassis" -> "rota_2" [label="xyz: 5 -5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
+"rota_2" -> "leg_2"
+"leg_2" -> "knee_2" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
+"knee_2" -> "ankle_2"
+"chassis" -> "rota_3" [label="xyz: -5 5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
+"rota_3" -> "leg_3"
+"leg_3" -> "knee_3" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
+"knee_3" -> "ankle_3"
+"chassis" -> "rota_4" [label="xyz: -5 -5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
+"rota_4" -> "leg_4"
+"leg_4" -> "knee_4" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
+"knee_4" -> "ankle_4"
+}
