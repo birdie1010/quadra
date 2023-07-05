@@ -98,7 +98,7 @@ def talker():
     rospy.init_node('joint_state_publisher')
     rate = rospy.Rate(2) # 10hz
     #finding angles
-    legs.points=point_finder('circle',(0,7.5),1.0,15)
+    legs.points=point_finder('circle',(0,7.5),2.0,15)
     legs.inv_kin_list()
     print('Points : ',legs.points)
     print('angles : ',legs.angles)    
@@ -110,23 +110,33 @@ def talker():
         joint_states=JointState()
         joint_states.header.stamp=rospy.get_rostime()
 
-        # pulishing below this
-        joint_states.name.append('rota')
-        joint_states.position.append(math.radians(0))
-        joint_states.name.append('knee')
-        joint_states.position.append(math.radians(0))
-        pub.publish(joint_states)
-        rate.sleep()
+        # pulishing below this axis trail
+        # joint_states.name.append('rota')
+        # joint_states.position.append(math.radians(0))
+        # joint_states.name.append('knee')
+        # joint_states.position.append(math.radians(0))
+        # pub.publish(joint_states)
+        # rate.sleep()
 
-        # if(index<len(legs.points)-1):
+        #individual inv_kin trial
+        # point=input()
+        # angle=legs.inv_kin_single((-3,3.5))
+        # joint_states.name.append('rota')
+        # joint_states.position.append(angle[0])
+        # joint_states.name.append('knee')
+        # joint_states.position.append(-angle[1])
+        # pub.publish(joint_states)
+        # rate.sleep()
+
+        if(index<len(legs.points)-1):
             # print(legs.angles[index][0])
-            # joint_states.name.append('rota')
-            # joint_states.position.append(legs.angles[index][0])
-            # joint_states.name.append('knee')
-            # joint_states.position.append(legs.angles[index][1])
-            # index+=1
-            # pub.publish(joint_states)
-            # rate.sleep()
+            joint_states.name.append('rota')
+            joint_states.position.append(legs.angles[index][0])
+            joint_states.name.append('knee')
+            joint_states.position.append(-legs.angles[index][1])
+            index+=1
+            pub.publish(joint_states)
+            rate.sleep()
 
 if __name__ == '__main__':
     try:
