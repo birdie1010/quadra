@@ -92,18 +92,22 @@ class legjoints:
 
 
 leg1=legjoints()
+leg2=legjoints()
+leg3=legjoints()
+leg4=legjoints()
+legs=[leg1,leg2,leg3,leg4]
 def talker():
-    global leg1,stepindex
+    global legs,stepindex
     pub = rospy.Publisher('joint_states', JointState, queue_size=10)
     rospy.init_node('joint_state_publisher')
     rate = rospy.Rate(2) # 10hz
     #finding angles
-    leg1.points=point_finder('circle',(0,7.5),2.0,15)
-    leg1.inv_kin_list()
+    legs[0].points=point_finder('circle',(0,7.5),2.0,15)
+    legs[0].inv_kin_list()
     print('Points : ',leg1.points)
     print('angles : ',leg1.angles)    
     index=0
-
+    
     while not rospy.is_shutdown():
         # joints.fd_mv_up()
 
@@ -111,13 +115,13 @@ def talker():
         joint_states.header.stamp=rospy.get_rostime()
 
         # pulishing below this axis trail
-        for i in range(1,5):            
-            joint_states.name.append(f'rota_{i}')
-            joint_states.position.append(math.radians(0))
-            joint_states.name.append(f'knee_{i}')
-            joint_states.position.append(math.radians(0))
-        pub.publish(joint_states)
-        rate.sleep()
+        # for i in range(1,5):            
+        #     joint_states.name.append(f'rota_{i}')
+        #     joint_states.position.append(math.radians(0))
+        #     joint_states.name.append(f'knee_{i}')
+        #     joint_states.position.append(math.radians(0))
+        # pub.publish(joint_states)
+        # rate.sleep()
 
         #individual inv_kin trial
         # point=input()
@@ -130,15 +134,17 @@ def talker():
         # rate.sleep()
 
         # #full inverse kinematics trial
-        # if(index<len(leg1.angles)):
-        #     # print(leg1.angles[index][0])
-        #     joint_states.name.append('rota_1')
-        #     joint_states.position.append(leg1.angles[index][0])
-        #     joint_states.name.append('knee_1')
-        #     joint_states.position.append(leg1.angles[index][1])
-        #     index+=1
-        #     pub.publish(joint_states)
-        #     rate.sleep()
+        if(index<len(legs[0].angles)):
+            # print(leg1.angles[index][0])
+            for i in range(1,5):
+                legs[i-1]=legs[0]
+                joint_states.name.append(f'rota_{i}')
+                joint_states.position.append(legs[i-1].angles[index][0])
+                joint_states.name.append(f'knee_{i}')
+                joint_states.position.append(legs[i-1].angles[index][1])
+            index+=1
+            pub.publish(joint_states)
+            rate.sleep()
 
 if __name__ == '__main__':
     try:

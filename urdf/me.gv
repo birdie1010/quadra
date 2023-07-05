@@ -21,11 +21,11 @@ node [shape=ellipse, color=blue, fontcolor=blue];
 "rota_2" -> "leg_2"
 "leg_2" -> "knee_2" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
 "knee_2" -> "ankle_2"
-"chassis" -> "rota_3" [label="xyz: -5 5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
+"chassis" -> "rota_3" [label="xyz: -5 -5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
 "rota_3" -> "leg_3"
 "leg_3" -> "knee_3" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
 "knee_3" -> "ankle_3"
-"chassis" -> "rota_4" [label="xyz: -5 -5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
+"chassis" -> "rota_4" [label="xyz: -5 5 0 \nrpy: -1.57 -2.1684e-19 3.14"]
 "rota_4" -> "leg_4"
 "leg_4" -> "knee_4" [label="xyz: 0 4.5 0 \nrpy: 0 -0 0"]
 "knee_4" -> "ankle_4"
