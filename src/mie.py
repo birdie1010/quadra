@@ -77,11 +77,11 @@ class legjoints:
             return None
         if(theta1 != None and theta2 != None):
             # (self.hip_state_pos,self.knee_state_pos)=(theta1,theta2)
-            return (theta1,theta2)
+            return (theta1,-theta2)
 
     def inv_kin_list(self):
         angles=[]
-        for i in range(len(self.points)-1):
+        for i in range(len(self.points)):
             angles.append(self.inv_kin_single(self.points[i]))
         self.angles=angles
         
@@ -128,12 +128,12 @@ def talker():
         # pub.publish(joint_states)
         # rate.sleep()
 
-        if(index<len(legs.points)-1):
+        if(index<len(legs.angles)):
             # print(legs.angles[index][0])
             joint_states.name.append('rota')
             joint_states.position.append(legs.angles[index][0])
             joint_states.name.append('knee')
-            joint_states.position.append(-legs.angles[index][1])
+            joint_states.position.append(legs.angles[index][1])
             index+=1
             pub.publish(joint_states)
             rate.sleep()
