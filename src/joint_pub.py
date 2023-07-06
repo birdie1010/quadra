@@ -7,12 +7,14 @@ import time
 import math
 
 # a function to give the required number of pts as a list
-def point_finder(path_type,foci,radius,number_of_pts):
-    division=math.radians(180)/(number_of_pts-1)
+#give
+def point_finder(path_type,foci,radius,number_of_pts,theta=None):
     point_list=[]
     if(number_of_pts<2):
         print('Error Min no of pts is 2')
+        return
     if(path_type.lower()=='circle'): 
+        division=math.radians(180)/(number_of_pts-1)
         theta=0
         point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))       
         point_list.append((round(point[0],4),round(point[1],4)))
@@ -20,8 +22,22 @@ def point_finder(path_type,foci,radius,number_of_pts):
             theta+=division
             point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))       
             point_list.append((round(point[0],4),round(point[1],4)))
+    elif(path_type.lower()=='linear'):
+        ini_pt=foci
+        length=0
+        theta=math.radians(theta)
+        if(math.isnan(theta)):
+            print('Error give direction of line')
+            return
+        division=radius/number_of_pts   #radius used as total length of line
+        point_list.append(ini_pt)
+        while(length != radius):
+            length+=division
+            point=(ini_pt[0]+(length*math.cos(theta)),ini_pt[1]+(length*math.sin(theta)))
+            point_list.append((round(point[0],4),round(point[1],4)))
     else:
         print('Error give proper path type')
+        return
     return point_list
             
 
