@@ -7,8 +7,9 @@ import time
 import math
 
 num_of_pt=15
+leg_travel_dist=4
 # a function to give the required number of pts as a list
-#give theta in degrees for lines. Otherwise not required
+#give theta in degrees for lines. Otherwise not required.give it in angle from -180 to 180.
 def point_finder(path_type,foci,radius,number_of_pts,theta=None):
     point_list=[]
     if(number_of_pts<2):
@@ -47,7 +48,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
             
 
 class legjoints:
-    global num_of_pt
+    global num_of_pt,leg_travel_dist
     thigh_len=5
     ankle_len=5
     points=[]
@@ -64,7 +65,7 @@ class legjoints:
         #each call moves to next position
         global joint_states
         if(self.position_no==0):
-            self.points=point_finder('circle',(0,7.5),2.0,num_of_pt)
+            self.points=point_finder('circle',(0,7.5),leg_travel_dist/2,num_of_pt)
             self.inv_kin_list()
             print('Points : ',self.points)
             print('angles : ',self.angles)    
@@ -118,7 +119,22 @@ class legjoints:
         return ((round(x,4),round(y,4)))
 
     def fd_mv_dwn(self):
-        pass
+        global joint_states
+        if(self.position_no==0):
+            self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
+            self.inv_kin_list()
+            print('Points : ',self.points)
+            print('angles : ',self.angles)    
+        if(self.position_no<len(self.angles)):
+            joint_states.name.append(f'rota_{self.leg_no}')
+            joint_states.position.append(self.angles[self.position_no][0])
+            joint_states.name.append(f'knee_{self.leg_no}')
+            joint_states.position.append(self.angles[self.position_no][1])
+            print(joint_states)
+            if(self.position_no<len(self.angles)-1):
+                self.position_no+=1
+        else:
+            return        
 
 
 
@@ -152,9 +168,9 @@ def talker():
         if(i<num_of_pt):
             i+=1
             leg1.fd_mv_up()
-            # leg2.fd_mv_up()
+            leg2.fd_mv_dwn()
             leg3.fd_mv_up()
-            # leg4.fd_mv_up()
+            leg4.fd_mv_dwn()
             pub.publish(joint_states)
             rate.sleep()
 
