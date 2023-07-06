@@ -137,7 +137,15 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        ankle_1:
+          Value: true
+        ankle_3:
+          Value: true
         chassis:
+          Value: true
+        leg_1:
+          Value: true
+        leg_3:
           Value: true
         map:
           Value: true
@@ -150,7 +158,12 @@ Visualization Manager:
       Tree:
         map:
           chassis:
-            {}
+            leg_1:
+              ankle_1:
+                {}
+            leg_3:
+              ankle_3:
+                {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -189,9 +202,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 2.240034818649292
-        Y: -3.02638578414917
-        Z: -2.178128480911255
+        X: 2.2746622562408447
+        Y: -2.836446762084961
+        Z: -3.69836163520813
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -218,4 +231,4 @@ Window Geometry:
     collapsed: false
   Width: 1917
   X: 1283
-  Y: 143
+  Y: 69
