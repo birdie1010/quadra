@@ -32,7 +32,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
             return None
         theta=math.radians(theta)
         division=radius/number_of_pts  #radius used as total length of line
-        print(division)
+        # print(division)
         point_list.append(ini_pt)
         for i in range(number_of_pts):
             length+=division
@@ -48,7 +48,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
             
 
 class legjoints:
-    global num_of_pt,leg_travel_dist
+    global num_of_pt,leg_travel_dist,pub
     thigh_len=5
     ankle_len=5
     points=[]
@@ -67,16 +67,18 @@ class legjoints:
         if(self.position_no==0):
             self.points=point_finder('circle',(0,7.5),leg_travel_dist/2,num_of_pt)
             self.inv_kin_list()
-            print('Points : ',self.points)
-            print('angles : ',self.angles)    
+            # print('Points : ',self.points)
+            # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
             joint_states.name.append(f'rota_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][1])
-            print(joint_states)
-            if(self.position_no<len(self.angles)-1):
-                self.position_no+=1
+            # print(joint_states)
+            # if(self.position_no<len(self.angles)-1):
+            # print(self.position_no)
+            self.position_no+=1
+            self.position_no%=num_of_pt
         else:
             return        
 
@@ -123,32 +125,69 @@ class legjoints:
         if(self.position_no==0):
             self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
             self.inv_kin_list()
-            print('Points : ',self.points)
-            print('angles : ',self.angles)    
+            # print('Points : ',self.points)
+            # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
             joint_states.name.append(f'rota_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][1])
-            print(joint_states)
-            if(self.position_no<len(self.angles)-1):
-                self.position_no+=1
+            # print(joint_states)
+            # if(self.position_no<len(self.angles)-1):
+            self.position_no+=1
+            self.position_no%=num_of_pt
         else:
             return        
 
 
+
+class gait_fns:
+    global num_of_pt,leg_travel_dist,pub,rate
+    def __init__(self,l1,l2,l3,l4):
+        self.leg1=l1
+        self.leg2=l2
+        self.leg3=l3
+        self.leg4=l4
+        self.contin=True
+        self.i=0
+
+    def gait_cont(self,gait_type):
+        if(self.contin):
+            if(gait_type.lower()=='trot'):
+                if(self.i%2==0):                
+                    self.leg1.fd_mv_up()
+                    self.leg2.fd_mv_dwn()
+                    self.leg3.fd_mv_up()
+                    self.leg4.fd_mv_dwn()
+                else:
+                    self.leg1.fd_mv_dwn()
+                    self.leg2.fd_mv_up()
+                    self.leg3.fd_mv_dwn()
+                    self.leg4.fd_mv_up()
+            self.i+=1
+            self.i=(self.i)
+            # print(self.i)
+
+    def gait_init(self,gait_type):
+        pass
+
+    def gait_leave(self,gait_type):
+        pass
 
 leg1=legjoints(1)
 leg2=legjoints(2)
 leg3=legjoints(3)
 leg4=legjoints(4)
 joint_states=JointState()
+rospy.init_node('joint_state_publisher')
+pub = rospy.Publisher('joint_states', JointState, queue_size=10)
+rate = rospy.Rate(2) # 10hz
+
 
 def talker():
-    global leg1,leg2,leg3,leg4,joint_states,num_of_pt
-    pub = rospy.Publisher('joint_states', JointState, queue_size=10)
-    rospy.init_node('joint_state_publisher')
-    rate = rospy.Rate(2) # 10hz
+    global leg1,leg2,leg3,leg4,joint_states,num_of_pt,pub,rate
+    legs=gait_fns(leg1,leg2,leg3,leg4)
+    
     
     while not rospy.is_shutdown():     
         joint_states.name.clear()
@@ -164,15 +203,19 @@ def talker():
         # pub.publish(joint_states)
         # rate.sleep()
 
-        i=0
-        if(i<num_of_pt):
-            i+=1
-            leg1.fd_mv_up()
-            leg2.fd_mv_dwn()
-            leg3.fd_mv_up()
-            leg4.fd_mv_dwn()
-            pub.publish(joint_states)
-            rate.sleep()
+        # i=0
+        # if(i<num_of_pt):
+        #     i+=1
+        # leg1.fd_mv_up()
+        #     leg2.fd_mv_dwn()
+        #     leg3.fd_mv_up()
+        #     leg4.fd_mv_dwn()
+        #     pub.publish(joint_states)
+        #     rate.sleep()
+
+        legs.gait_cont('Trot')
+        pub.publish(joint_states)
+        rate.sleep()
 
 if __name__ == '__main__':
     try:
