@@ -8,6 +8,7 @@ import math
 
 num_of_pt=50
 leg_travel_dist=4
+robo_height=7.5
 # a function to give the required number of pts as a list
 #give theta in degrees for lines. Otherwise not required.give it in angle from -180 to 180.
 def point_finder(path_type,foci,radius,number_of_pts,theta=None):
@@ -50,7 +51,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
  
 
 class legjoints:
-    global num_of_pt,leg_travel_dist,pub
+    global num_of_pt,leg_travel_dist,pub,robo_height
     thigh_len=5
     ankle_len=5
     points=[]
@@ -63,11 +64,14 @@ class legjoints:
         self.knee_state_vel=0
         self.step_index=0
         self.position_no=0
-    def fd_mv_up(self):
+    def fd_mv_up(self,circ_radius=None):
         #each call moves to next position
         global joint_states
         if(self.position_no==0):
-            self.points=point_finder('circle',(0,7.5),leg_travel_dist/2,num_of_pt)
+            if(circ_radius==None):
+                self.points=point_finder('circle',(0,robo_height),leg_travel_dist/2,num_of_pt)
+            else:
+                self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             self.inv_kin_list()
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
@@ -122,10 +126,14 @@ class legjoints:
         y=(l1*math.sin(angles[0]))+(l2*math.sin(angles[0]+angles[1]))
         return ((round(x,4),round(y,4)))
 
-    def fd_mv_dwn(self):
+    def fd_mv_dwn(self,circ_radius=None):
         global joint_states
         if(self.position_no==0):
-            self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
+            if(circ_radius==None):
+                self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
+            else:
+                for i in range(num_of_pt):          #need not to be moved so giving same points as traject to avoid error
+                    self.points.append((0,7.5))
             self.inv_kin_list()
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
@@ -157,7 +165,12 @@ class gait_fns:
     def gait_cont(self,gait_type):
         if(self.contin):
             if(gait_type.lower()=='trot'):
-                if(self.cycle%2==0):                
+                if(self.i==0):      #first step is a smaller step to initialize gait
+                   self.leg1.fd_mv_up(leg_travel_dist/4)
+                   self.leg2.fd_mv_dwn(leg_travel_dist/4)
+                   self.leg3.fd_mv_up(leg_travel_dist/4)
+                   self.leg4.fd_mv_dwn(leg_travel_dist/4)
+                elif(self.cycle%2==0):                
                     self.leg1.fd_mv_up()
                     self.leg2.fd_mv_dwn()
                     self.leg3.fd_mv_up()
