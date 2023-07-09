@@ -129,11 +129,11 @@ class legjoints:
     def fd_mv_dwn(self,circ_radius=None):
         global joint_states
         if(self.position_no==0):
-            if(circ_radius==None):
-                self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
-            else:
-                for i in range(num_of_pt):          #need not to be moved so giving same points as traject to avoid error
-                    self.points.append((0,7.5))
+            # if(circ_radius==None):
+            self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
+            # else:
+            #     for i in range(num_of_pt):          #need not to be moved so giving same points as traject to avoid error
+            #         self.points.append((0,7.5))
             self.inv_kin_list()
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
