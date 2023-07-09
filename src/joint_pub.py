@@ -6,7 +6,7 @@ from sensor_msgs.msg import JointState
 import time
 import math
 
-num_of_pt=15
+num_of_pt=50
 leg_travel_dist=4
 # a function to give the required number of pts as a list
 #give theta in degrees for lines. Otherwise not required.give it in angle from -180 to 180.
@@ -17,12 +17,14 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         return None
     if(path_type.lower()=='circle'): 
         division=math.radians(180)/(number_of_pts-1)
-        theta=math.radians(180)
-        point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))       
+        theta=-math.radians(180)
+        point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))  
+        # print(point)     
         point_list.append((round(point[0],4),round(point[1],4)))
-        while(theta != math.radians(0)):
-            theta-=division
-            point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))       
+        for i in range(number_of_pts-1):
+            theta+=division
+            point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))    
+            # print(point)   
             point_list.append((round(point[0],4),round(point[1],4)))
     elif(path_type.lower()=='linear'):
         ini_pt=foci
@@ -34,7 +36,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         division=radius/number_of_pts  #radius used as total length of line
         # print(division)
         point_list.append(ini_pt)
-        for i in range(number_of_pts):
+        for i in range(number_of_pts-1):
             length+=division
             length=round(length,4)  #binary calculation error is coming if round not included
             # print(length)
@@ -45,7 +47,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         print('Error give proper path type')
         return None
     return point_list
-            
+ 
 
 class legjoints:
     global num_of_pt,leg_travel_dist,pub
@@ -150,11 +152,12 @@ class gait_fns:
         self.leg4=l4
         self.contin=True
         self.i=0
+        self.cycle=0
 
     def gait_cont(self,gait_type):
         if(self.contin):
             if(gait_type.lower()=='trot'):
-                if(self.i%2==0):                
+                if(self.cycle%2==0):                
                     self.leg1.fd_mv_up()
                     self.leg2.fd_mv_dwn()
                     self.leg3.fd_mv_up()
@@ -165,7 +168,7 @@ class gait_fns:
                     self.leg3.fd_mv_dwn()
                     self.leg4.fd_mv_up()
             self.i+=1
-            self.i=(self.i)
+            self.cycle=int(self.i/num_of_pt)         #this is cycle number not point number
             # print(self.i)
 
     def gait_init(self,gait_type):

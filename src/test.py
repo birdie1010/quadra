@@ -8,12 +8,14 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         return None
     if(path_type.lower()=='circle'): 
         division=math.radians(180)/(number_of_pts-1)
-        theta=math.radians(180)
-        point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))       
+        theta=-math.radians(180)
+        point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))  
+        # print(point)     
         point_list.append((round(point[0],4),round(point[1],4)))
-        while(theta != math.radians(0)):
-            theta-=division
-            point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))       
+        for i in range(number_of_pts-1):
+            theta+=division
+            point=(foci[0]+(radius*math.cos(theta)),foci[1]+(radius*math.sin(theta)))    
+            # print(point)   
             point_list.append((round(point[0],4),round(point[1],4)))
     elif(path_type.lower()=='linear'):
         ini_pt=foci
@@ -23,9 +25,9 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
             return None
         theta=math.radians(theta)
         division=radius/number_of_pts  #radius used as total length of line
-        print(division)
+        # print(division)
         point_list.append(ini_pt)
-        for i in range(number_of_pts):
+        for i in range(number_of_pts-1):
             length+=division
             length=round(length,4)  #binary calculation error is coming if round not included
             # print(length)
@@ -36,5 +38,6 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         print('Error give proper path type')
         return None
     return point_list
+            
 
-print(point_finder('linear',(0,0),5,10,180))
+print(point_finder('circle',(0,0),1,10))
