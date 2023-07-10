@@ -209,7 +209,6 @@ class move_fns:
     def sns(self,height):
         # global robo_height,joint_states
         # print(height)
-        robo_height=height
         angles=leg1.inv_kin_single((height,0))  #jerk will be there need to be edited
         print(angles)
         # joint_states.name.append(f'rota_1')
@@ -242,9 +241,10 @@ def talker():
         joint_states.name.clear()
         joint_states.position.clear()
         joint_states.header.stamp=rospy.get_rostime()
-        if(rospy.get_param('/robo_height',7.5)!=robo_height):
-            legs.sns(rospy.get_param('/robo_height'))   
-
+        h=rospy.get_param('/robo_height')
+        if(h!=robo_height):
+            legs.sns(h)   
+            robo_height=h
         legs.gait('Trot')
         pub.publish(joint_states)
         rate.sleep()
