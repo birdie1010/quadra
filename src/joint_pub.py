@@ -152,7 +152,7 @@ class legjoints:
 
 
 class move_fns:
-    global num_of_pt,leg_travel_dist,pub,rate
+    global num_of_pt,leg_travel_dist,pub,rate,robo_height,joint_states
     def __init__(self,l1,l2,l3,l4):
         self.leg1=l1
         self.leg2=l2
@@ -165,8 +165,6 @@ class move_fns:
 
     def gait(self,gait_type):
         self.contin=rospy.get_param('/contin_walk',True)
-        # print(self.contin)
-        # print(rospy.get_param('/contin_walk',True))
         if(gait_type.lower()=='trot'):
             if(self.contin or self.prev_cycle==self.cycle):
                 self.stop=False  #if comming in after stopping this is required
@@ -207,12 +205,22 @@ class move_fns:
                     self.i=0
                 print('stopping')
 
-    def gait_init(self,gait_type):
-        pass
-
-    def gait_leave(self,gait_type):
-        pass
-            
+    #for sitting and standing.Use while quadra at rest
+    def sns(self,height):
+        # global robo_height,joint_states
+        # print(height)
+        robo_height=height
+        angles=leg1.inv_kin_single((height,0))  #jerk will be there need to be edited
+        print(angles)
+        # joint_states.name.append(f'rota_1')
+        # joint_states.position.append(angles[0])
+        for i in range(4):
+            # print('heo')
+            joint_states.name.append(f'rota_{i+1}')
+            joint_states.position.append(angles[0])
+            joint_states.name.append(f'knee_{i+1}')
+            joint_states.position.append(angles[1])
+        print(joint_states)   
 
 leg1=legjoints(1)
 leg2=legjoints(2)
@@ -230,10 +238,12 @@ def talker():
     
     
     while not rospy.is_shutdown():  
-        # robo_height = rospy.get_param('robo_height',7.5)   
+        # robo_height = rospy.get_param('robo_height',7.5)
         joint_states.name.clear()
         joint_states.position.clear()
         joint_states.header.stamp=rospy.get_rostime()
+        if(rospy.get_param('/robo_height',7.5)!=robo_height):
+            legs.sns(rospy.get_param('/robo_height'))   
 
         legs.gait('Trot')
         pub.publish(joint_states)
