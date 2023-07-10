@@ -6,7 +6,7 @@ from sensor_msgs.msg import JointState
 import time
 import math
 
-num_of_pt=50
+num_of_pt=10
 leg_travel_dist=4
 robo_height=7.5
 # a function to give the required number of pts as a list
@@ -158,13 +158,16 @@ class gait_fns:
         self.leg2=l2
         self.leg3=l3
         self.leg4=l4
-        self.contin=True
         self.i=0
         self.cycle=0
+        self.prev_cycle=None
+        self.stop=False
 
     def gait_cont(self,gait_type):
-        if(self.contin):
-            if(gait_type.lower()=='trot'):
+        self.contin=rospy.get_param('/contin_walk',True)
+        print(self.contin)
+        if(gait_type.lower()=='trot'):
+            if(self.contin or self.prev_cycle==self.cycle):
                 if(self.i==0):      #first step is a smaller step to initialize gait
                    self.leg1.fd_mv_up(leg_travel_dist/4)
                    self.leg2.fd_mv_dwn(leg_travel_dist/4)
@@ -180,15 +183,36 @@ class gait_fns:
                     self.leg2.fd_mv_up()
                     self.leg3.fd_mv_dwn()
                     self.leg4.fd_mv_up()
-            self.i+=1
-            self.cycle=int(self.i/num_of_pt)         #this is cycle number not point number
-            # print(self.i)
+                self.prev_cycle=self.cycle
+                self.i+=1
+                self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
+                # print(self.i)
+            elif(self.stop==False):
+                #to stop trot gait and come to rest
+                # for i in range(num_of_pt):
+                if(self.cycle%2==0):                
+                    self.leg1.fd_mv_up(leg_travel_dist/4)
+                    # self.leg2.fd_mv_dwn(leg_travel_dist/4)
+                    self.leg3.fd_mv_up(leg_travel_dist/4)
+                    # self.leg4.fd_mv_dwn(leg_travel_dist/4)
+                else:
+                    self.leg1.fd_mv_dwn(leg_travel_dist/4)
+                    # self.leg2.fd_mv_up(leg_travel_dist/4)
+                    self.leg3.fd_mv_dwn(leg_travel_dist/4)
+                    # self.leg4.fd_mv_up(leg_travel_dist/4)
+                self.prev_cycle=None
+                self.i+=1
+                # self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
+                if(self.cycle!=int(self.i/num_of_pt)):
+                    self.stop=True
+                print('stopping')
 
     def gait_init(self,gait_type):
         pass
 
     def gait_leave(self,gait_type):
         pass
+            
 
 leg1=legjoints(1)
 leg2=legjoints(2)

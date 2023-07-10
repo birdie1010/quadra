@@ -1,6 +1,7 @@
 <launch>
    <!-- Load the urdf into the parameter server. -->
    <param name="robot_description" textfile="$(find testbot_description)/urdf/auto.urdf"/>
+   <param name="contin_walk" value="True"/>
     <node pkg="testbot_description" type="joint_pub.py" name="joint_st_pub">
         
     </node>
