@@ -151,7 +151,7 @@ class legjoints:
 
 
 
-class gait_fns:
+class move_fns:
     global num_of_pt,leg_travel_dist,pub,rate
     def __init__(self,l1,l2,l3,l4):
         self.leg1=l1
@@ -163,7 +163,7 @@ class gait_fns:
         self.prev_cycle=None
         self.stop=False
 
-    def mover(self,gait_type):
+    def gait(self,gait_type):
         self.contin=rospy.get_param('/contin_walk',True)
         # print(self.contin)
         # print(rospy.get_param('/contin_walk',True))
@@ -226,7 +226,7 @@ rate = rospy.Rate(2) # 10hz
 
 def talker():
     global leg1,leg2,leg3,leg4,joint_states,num_of_pt,pub,rate,robo_height
-    legs=gait_fns(leg1,leg2,leg3,leg4)
+    legs=move_fns(leg1,leg2,leg3,leg4)
     
     
     while not rospy.is_shutdown():  
@@ -235,7 +235,7 @@ def talker():
         joint_states.position.clear()
         joint_states.header.stamp=rospy.get_rostime()
 
-        legs.mover('Trot')
+        legs.gait('Trot')
         pub.publish(joint_states)
         rate.sleep()
 
