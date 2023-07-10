@@ -163,11 +163,13 @@ class gait_fns:
         self.prev_cycle=None
         self.stop=False
 
-    def gait_cont(self,gait_type):
+    def mover(self,gait_type):
         self.contin=rospy.get_param('/contin_walk',True)
-        print(self.contin)
+        # print(self.contin)
+        # print(rospy.get_param('/contin_walk',True))
         if(gait_type.lower()=='trot'):
             if(self.contin or self.prev_cycle==self.cycle):
+                self.stop=False  #if comming in after stopping this is required
                 if(self.i==0):      #first step is a smaller step to initialize gait
                    self.leg1.fd_mv_up(leg_travel_dist/4)
                    self.leg2.fd_mv_dwn(leg_travel_dist/4)
@@ -192,19 +194,17 @@ class gait_fns:
                 # for i in range(num_of_pt):
                 if(self.cycle%2==0):                
                     self.leg1.fd_mv_up(leg_travel_dist/4)
-                    # self.leg2.fd_mv_dwn(leg_travel_dist/4)
                     self.leg3.fd_mv_up(leg_travel_dist/4)
-                    # self.leg4.fd_mv_dwn(leg_travel_dist/4)
                 else:
-                    self.leg1.fd_mv_dwn(leg_travel_dist/4)
-                    # self.leg2.fd_mv_up(leg_travel_dist/4)
-                    self.leg3.fd_mv_dwn(leg_travel_dist/4)
-                    # self.leg4.fd_mv_up(leg_travel_dist/4)
+                    self.leg2.fd_mv_up(leg_travel_dist/4)
+                    self.leg4.fd_mv_up(leg_travel_dist/4)
                 self.prev_cycle=None
                 self.i+=1
                 # self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
                 if(self.cycle!=int(self.i/num_of_pt)):
+                    self.cycle=0        #this is cycle number not point number
                     self.stop=True
+                    self.i=0
                 print('stopping')
 
     def gait_init(self,gait_type):
@@ -225,35 +225,17 @@ rate = rospy.Rate(2) # 10hz
 
 
 def talker():
-    global leg1,leg2,leg3,leg4,joint_states,num_of_pt,pub,rate
+    global leg1,leg2,leg3,leg4,joint_states,num_of_pt,pub,rate,robo_height
     legs=gait_fns(leg1,leg2,leg3,leg4)
     
     
-    while not rospy.is_shutdown():     
+    while not rospy.is_shutdown():  
+        # robo_height = rospy.get_param('robo_height',7.5)   
         joint_states.name.clear()
         joint_states.position.clear()
         joint_states.header.stamp=rospy.get_rostime()
 
-        # pulishing below this axis trail
-        # for i in range(1,5):            
-        #     joint_states.name.append(f'rota_{i}')
-        #     joint_states.position.append(math.radians(0))
-        #     joint_states.name.append(f'knee_{i}')
-        #     joint_states.position.append(math.radians(0))
-        # pub.publish(joint_states)
-        # rate.sleep()
-
-        # i=0
-        # if(i<num_of_pt):
-        #     i+=1
-        # leg1.fd_mv_up()
-        #     leg2.fd_mv_dwn()
-        #     leg3.fd_mv_up()
-        #     leg4.fd_mv_dwn()
-        #     pub.publish(joint_states)
-        #     rate.sleep()
-
-        legs.gait_cont('Trot')
+        legs.mover('Trot')
         pub.publish(joint_states)
         rate.sleep()
 
