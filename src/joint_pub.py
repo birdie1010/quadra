@@ -64,14 +64,16 @@ class legjoints:
         self.knee_state_vel=0
         self.step_index=0
         self.position_no=0
-    def fd_mv_up(self,circ_radius=None):
+    def fd_mv_up(self,circ_radius=None,center=None):
         #each call moves to next position
         global joint_states
         if(self.position_no==0):
             if(circ_radius==None):
                 self.points=point_finder('circle',(0,robo_height),leg_travel_dist/2,num_of_pt)
-            else:
+            elif(center==None):
                 self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
+            else:
+                self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
             self.inv_kin_list()
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
@@ -129,11 +131,10 @@ class legjoints:
     def fd_mv_dwn(self,circ_radius=None):
         global joint_states
         if(self.position_no==0):
-            # if(circ_radius==None):
-            self.points=point_finder('linear',(0,7.5),leg_travel_dist/2,num_of_pt,180)
-            # else:
-            #     for i in range(num_of_pt):          #need not to be moved so giving same points as traject to avoid error
-            #         self.points.append((0,7.5))
+            if(circ_radius==None):
+                self.points=point_finder('linear',(0,robo_height),leg_travel_dist/2,num_of_pt,180)
+            else:
+                self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
             self.inv_kin_list()
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
@@ -161,7 +162,7 @@ class move_fns:
         self.i=0
         self.cycle=0
         self.prev_cycle=None
-        self.stop=False
+        self.stop=False     #true only if robot at rest
 
     def gait(self,gait_type):
         self.contin=rospy.get_param('/contin_walk',True)
@@ -219,7 +220,39 @@ class move_fns:
             joint_states.position.append(angles[0])
             joint_states.name.append(f'knee_{i+1}')
             joint_states.position.append(angles[1])
-        print(joint_states)   
+        print(joint_states)
+
+    def turn(self,direction):
+        if(self.stop or self.prev_cycle==self.cycle):
+            if(direction=='left'):
+                if(self.cycle%2==0):                
+                    self.leg1.fd_mv_up()
+                    self.leg2.fd_mv_dwn(leg_travel_dist/4)
+                    self.leg3.fd_mv_dwn(leg_travel_dist/4)
+                    self.leg4.fd_mv_up()
+                else:
+                    self.leg1.fd_mv_dwn()
+                    self.leg2.fd_mv_up(leg_travel_dist/4,(0,robo_height))
+                    self.leg3.fd_mv_up(leg_travel_dist/4,(0,robo_height))
+                    self.leg4.fd_mv_dwn()
+                self.prev_cycle=self.cycle
+                self.i+=1
+                self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
+            elif(direction=='right'):
+                if(self.cycle%2==0):                
+                    self.leg1.fd_mv_up(leg_travel_dist/4,(0,robo_height))
+                    self.leg2.fd_mv_dwn()
+                    self.leg3.fd_mv_dwn()
+                    self.leg4.fd_mv_up(leg_travel_dist/4,(0,robo_height))
+                else:
+                    self.leg1.fd_mv_dwn(leg_travel_dist/4)
+                    self.leg2.fd_mv_up(leg_travel_dist/4,(0,robo_height))
+                    self.leg3.fd_mv_up(leg_travel_dist/4,(0,robo_height))
+                    self.leg4.fd_mv_dwn(leg_travel_dist/4)
+                self.prev_cycle=self.cycle
+                self.i+=1
+                self.cycle=int(self.i/num_of_pt)
+
 
 leg1=legjoints(1)
 leg2=legjoints(2)
@@ -245,7 +278,9 @@ def talker():
         if(h!=robo_height):
             legs.sns(h)   
             robo_height=h
-        legs.gait('Trot')
+        # legs.gait('Trot')
+        legs.stop=True
+        legs.turn('right')
         pub.publish(joint_states)
         rate.sleep()
 
