@@ -278,9 +278,9 @@ def talker():
         if(h!=robo_height):
             legs.sns(h)   
             robo_height=h
-        # legs.gait('Trot')
-        legs.stop=True
-        legs.turn('right')
+        legs.gait('Trot')
+        # legs.stop=True
+        # legs.turn('right')
         pub.publish(joint_states)
         rate.sleep()
 
