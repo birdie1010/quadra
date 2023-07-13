@@ -3,6 +3,8 @@
 PI=3.14
 import rospy
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64MultiArray
+# from std_msgs.msg import Empty
 import time
 import math
 
@@ -259,13 +261,15 @@ leg2=legjoints(2)
 leg3=legjoints(3)
 leg4=legjoints(4)
 joint_states=JointState()
+js_real=Float64MultiArray()
 rospy.init_node('joint_state_publisher')
-pub = rospy.Publisher('joint_states', JointState, queue_size=10)
+pub = rospy.Publisher('joint_states', JointState, queue_size=2)
+pub_real=rospy.Publisher('js_real',Float64MultiArray,queue_size=2)
 rate = rospy.Rate(2) # 10hz
 
 
 def talker():
-    global leg1,leg2,leg3,leg4,joint_states,num_of_pt,pub,rate,robo_height
+    global leg1,leg2,leg3,leg4,joint_states,num_of_pt,pub,rate,robo_height,js
     legs=move_fns(leg1,leg2,leg3,leg4)
     
     
@@ -273,6 +277,7 @@ def talker():
         # robo_height = rospy.get_param('robo_height',7.5)
         joint_states.name.clear()
         joint_states.position.clear()
+        js_real.data.clear()
         joint_states.header.stamp=rospy.get_rostime()
         h=rospy.get_param('/robo_height')
         if(h!=robo_height):
@@ -281,7 +286,11 @@ def talker():
         legs.gait('Trot')
         # legs.stop=True
         # legs.turn('right')
+        for i in range(8):
+            js_real.data.append(int(joint_states.position[i]*180/3.14))
+        # print(js_real.data)
         pub.publish(joint_states)
+        pub_real.publish(js_real)
         rate.sleep()
 
 if __name__ == '__main__':
