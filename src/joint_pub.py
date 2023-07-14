@@ -54,8 +54,8 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
 
 class legjoints:
     global num_of_pt,leg_travel_dist,pub,robo_height
-    thigh_len=5
-    ankle_len=5
+    thigh_len=6
+    ankle_len=6
     points=[]
     angles=[]
     def __init__(self,leg_no=1):
