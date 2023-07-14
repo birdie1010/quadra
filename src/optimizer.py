@@ -91,12 +91,23 @@ class calculator:
     def vel_calc_mat(self,t1:float,t2:float,w1:float,w2:float,a1:float,a2:float):
         s2=math.sin(t2)
         c2=math.cos(t2)
-        self.r21=np.matrix(f'{c2} {-s2} 0 {self.l1*c2} ; {s2} {c2} 0 {self.l1*s2} ; 0 0 1 0 ; 0 0 0 1',float)  #rotation matrix 1 to 2
-        self.w11=np.matrix(f'0;0;{w1}',float)
+        self.r21=np.matrix(f'{c2} {-s2} 0 {self.l1} ; {s2} {c2} 0 0 ; 0 0 1 0 ; 0 0 0 1',float)  #rotation matrix 1 to 2
+        self.w11=np.matrix(f'0;0;{w1} ;1',float)
         self.w11c=self.w11
-        self.v11=np.matrix('0 ; 0 ; 0',float)
-
-        # print('w11',self.w11)
+        self.v11=np.matrix('0 ; 0 ; 0 ;1',float)
+        w21=np.dot(self.r21,self.w11)
+        self.w22=np.add(w21,np.matrix(f'0;0;{w2};0',float))  #w2c would be equal to this one. In the equation w2 is theta2 dot
+        w11_vect=np.matrix(f'0 0 {w1}',float)   #w11 vector to be used in cross products.4 dimesional cross products D.N.E. So cannot be done in homogenous
+        self.v11c=np.cross(w11_vect,np.matrix(f'{self.l1/2} 0 0'))
+        v12=np.cross(w11_vect,np.matrix(f'{self.l1} 0 0'))
+        v12_homo=np.append(v12,[1])
+        self.v22=np.dot(self.r21,v12_homo)
+        # w22_vect=np.matrix(f'{self.w22[0]} {self.w22[1]} {self.w22[2]}')
+        # v22c_p1=np.cross(w22_vect,np.matrix(f'{self.l1} 0 0',float))
+        # v22c
+        print('v22',self.v22)
+        print('w22_vect',w22_vect)
+        print('v22c_p1',v22c_p1)
         # print('r21',self.r21)
         # print(self.w22)   
 
