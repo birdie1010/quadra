@@ -1,5 +1,6 @@
 import math
 import time
+import numpy as np
 
 from joint_pub import legjoints
 from joint_pub import point_finder
@@ -80,7 +81,41 @@ class optimizer:
         print('Max height:   ',self.r_minor)
         return self.r_major,self.r_minor
     
+#1 is hip and 2 is knee
+#first letter is super script and second one is sub
+class calculator:
+    def __init__(self,leg1:legjoints) ->None:
+        self.l1=leg1.thigh_len
+        self.l2=leg1.ankle_len
+    
+    def vel_calc_mat(self,t1:float,t2:float,w1:float,w2:float,a1:float,a2:float):
+        s2=math.sin(t2)
+        c2=math.cos(t2)
+        self.r21=np.matrix(f'{c2} {-s2} 0 {self.l1*c2} ; {s2} {c2} 0 {self.l1*s2} ; 0 0 1 0 ; 0 0 0 1',float)  #rotation matrix 1 to 2
+        self.w11=np.matrix(f'0;0;{w1}',float)
+        self.w11c=self.w11
+        self.v11=np.matrix('0 ; 0 ; 0',float)
+
+        # print('w11',self.w11)
+        # print('r21',self.r21)
+        # print(self.w22)   
+
+
 
 my_leg=legjoints()
-opt=optimizer(9,my_leg,130,45)
-print(opt.max_length_finder())
+# opt=optimizer(9,my_leg,130,45)
+# print(opt.max_length_finder())
+my_leg.points=point_finder('circle',(0,9),1,10)
+my_leg.inv_kin_list()
+calc=calculator(my_leg)
+vel1_list=np.diff([i[0] for i in my_leg.angles])
+vel2_list=np.diff([i[1] for i in my_leg.angles])
+acel1_list=np.diff([i[0] for i in my_leg.angles],n=2)
+acel2_list=np.diff([i[1] for i in my_leg.angles],n=2)
+# print('leg angles',my_leg.angles)
+# print('vel1_list',vel1_list)
+# print('vel2_list',vel2_list)
+# print('acel1_list',acel1_list)
+# print('acel2_list',acel2_list)
+for i in range(8):    #2 less since accel,vel needed
+    calc.vel_calc_mat(my_leg.angles[i][0],my_leg.angles[i][1],vel1_list[i],vel2_list[i],acel1_list[i],acel2_list[i])
