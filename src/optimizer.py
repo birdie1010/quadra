@@ -1,7 +1,7 @@
 import math
 import time
 import numpy as np
-
+from pprint import pprint
 from joint_pub import legjoints
 from joint_pub import point_finder
 
@@ -102,21 +102,21 @@ class calculator:
         v12=np.cross(w11_vect,np.matrix(f'{self.l1} 0 0'))
         v12_homo=np.append(v12,[1])
         self.v22=np.dot(self.r21,v12_homo)
-        # w22_vect=np.matrix(f'{self.w22[0]} {self.w22[1]} {self.w22[2]}')
-        # v22c_p1=np.cross(w22_vect,np.matrix(f'{self.l1} 0 0',float))
-        # v22c
-        print('v22',self.v22)
-        print('w22_vect',w22_vect)
-        print('v22c_p1',v22c_p1)
-        # print('r21',self.r21)
-        # print(self.w22)   
+        w22_vect=np.matrix(f'{self.w22[0]} {self.w22[1]} {self.w22[2]}')
+        v22c_p1=np.cross(w22_vect,np.matrix(f'{self.l1} 0 0',float))
+        v22_vect=np.matrix(f'{self.v22.item(0,0)} {self.v22.item(0,1)} {self.v22.item(0,2)}')
+        self.v22c=np.add(v22c_p1,v22_vect)          #in vector form
+        pprint(vars(self))  
+
+        
 
 
 
 my_leg=legjoints()
 # opt=optimizer(9,my_leg,130,45)
 # print(opt.max_length_finder())
-my_leg.points=point_finder('circle',(0,9),1,10)
+number=3
+my_leg.points=point_finder('circle',(0,9),1,number)
 my_leg.inv_kin_list()
 calc=calculator(my_leg)
 vel1_list=np.diff([i[0] for i in my_leg.angles])
@@ -128,5 +128,5 @@ acel2_list=np.diff([i[1] for i in my_leg.angles],n=2)
 # print('vel2_list',vel2_list)
 # print('acel1_list',acel1_list)
 # print('acel2_list',acel2_list)
-for i in range(8):    #2 less since accel,vel needed
+for i in range(number-2):    #2 less since accel,vel needed
     calc.vel_calc_mat(my_leg.angles[i][0],my_leg.angles[i][1],vel1_list[i],vel2_list[i],acel1_list[i],acel2_list[i])
