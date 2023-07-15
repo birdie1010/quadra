@@ -88,7 +88,7 @@ class calculator:
         self.l1=leg1.thigh_len
         self.l2=leg1.ankle_len
     
-    def vel_calc_mat(self,t1:float,t2:float,w1:float,w2:float,a1:float,a2:float):
+    def vel_calc_mat(self,t1:float,t2:float,w1:float,w2:float):
         s2=math.sin(t2)
         c2=math.cos(t2)
         self.r21=np.matrix(f'{c2} {-s2} 0 {self.l1} ; {s2} {c2} 0 0 ; 0 0 1 0 ; 0 0 0 1',float)  #rotation matrix 1 to 2
@@ -106,10 +106,34 @@ class calculator:
         v22c_p1=np.cross(w22_vect,np.matrix(f'{self.l1} 0 0',float))
         v22_vect=np.matrix(f'{self.v22.item(0,0)} {self.v22.item(0,1)} {self.v22.item(0,2)}')
         self.v22c=np.add(v22c_p1,v22_vect)          #in vector form
-        pprint(vars(self))  
+        # pprint(vars(self))  
 
-        
-
+    def acce_calc(self,a1:float,a2:float,w1:float,w2:float):
+        self.alpha11=np.matrix(f'0 ;0 ;{a1}; 1')
+        alpha22_p1=np.dot(self.r21,self.alpha11)
+        alpha22_p1_vect=np.matrix(f'{alpha22_p1.item(0,0)} {alpha22_p1.item(1,0)} {alpha22_p1.item(2,0)}')
+        w11_vect=np.matrix(f'{self.w11.item(0,0)} {self.w11.item(1,0)} {self.w11.item(2,0)}')
+        self.a1=np.matrix(f'0 0 0 0')
+        w21=np.dot(self.r21,self.w11)
+        w21_vect=np.matrix(f'{w21.item(0,0)} {w21.item(1,0)} {w21.item(2,0)}')
+        alpha22_p2=np.cross(np.matrix(f'0 0 {w2}'),w21_vect)
+        alpha22_p3=np.matrix(f'0 0 {a2}')
+        self.alpha22=np.add(alpha22_p1_vect,np.add(alpha22_p2,alpha22_p3))
+        self.a11c=np.cross(w11_vect,np.matrix(f'{self.l1/2} 0 0'))
+        temp=np.cross(w11_vect,np.matrix(f'{self.l1} 0 0'))
+        temp_homo=np.append(temp,[1])
+        a22_p1=np.dot(self.r21,temp_homo)
+        # theta2_dot=np.matrix(f'0 0 {w2}')
+        a22_p2_a=np.cross(w11_vect,temp)
+        a22_p2=np.dot(self.r21,np.append(a22_p2_a,[1]))
+        a22_p3=np.squeeze(np.dot(self.r21,self.a1.T))
+        a22=np.add(a22_p1,np.add(a22_p2,a22_p3))
+        self.a22_vect=np.matrix(f'{a22.item(0)} {a22.item(1)} {a22.item(2)}')
+        temp=np.cross(np.matrix(f'{self.w22.item(0)} {self.w22.item(1)} {self.w22.item(2)}'),np.matrix(f'{self.l2/2} 0 0'))
+        a22c_p2=np.cross(np.matrix(f'{self.w22.item(0)} {self.w22.item(1)} {self.w22.item(2)}'),temp)
+        self.a22c=np.add(temp,np.add(a22c_p2,self.a22_vect))
+        # a22_p2_b
+        pprint(vars(self))
 
 
 my_leg=legjoints()
@@ -129,4 +153,6 @@ acel2_list=np.diff([i[1] for i in my_leg.angles],n=2)
 # print('acel1_list',acel1_list)
 # print('acel2_list',acel2_list)
 for i in range(number-2):    #2 less since accel,vel needed
-    calc.vel_calc_mat(my_leg.angles[i][0],my_leg.angles[i][1],vel1_list[i],vel2_list[i],acel1_list[i],acel2_list[i])
+    calc.vel_calc_mat(my_leg.angles[i][0],my_leg.angles[i][1],vel1_list[i],vel2_list[i])
+    # print('Velocity done')
+    calc.acce_calc(acel1_list[i],acel2_list[i],vel1_list[i],vel2_list[i])
