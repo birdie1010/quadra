@@ -1,0 +1,16 @@
+<launch>
+   <!-- Load the urdf into the parameter server. -->
+   <param name="robot_description" textfile="$(find testbot_description)/urdf/ele.urdf"/>
+   <param name="contin_walk" value="True"/>
+   <param name="robo_height" value="7.5"/>
+    <node pkg="testbot_description" type="elephant.py" name="joint_st_pub">
+        
+    </node>
+   <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub" >
+    </node>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find testbot_description)/urdf/ele.rviz">
+    <!-- <node pkg="rviz" type="rviz" name="rviz"> -->
+
+        
+    </node>
+  </launch>

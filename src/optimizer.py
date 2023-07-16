@@ -133,7 +133,7 @@ class calculator:
         a22c_p2=np.cross(np.matrix(f'{self.w22.item(0)} {self.w22.item(1)} {self.w22.item(2)}'),temp)
         self.a22c=np.add(temp,np.add(a22c_p2,self.a22_vect))
         # a22_p2_b
-        pprint(vars(self))
+        # pprint(vars(self))
 
 
 my_leg=legjoints()

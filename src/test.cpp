@@ -1,14 +1,12 @@
-#include <ros.h>
-#include<sensor_msgs/JointState.h>
+#include <iostream>
+using namespace std;
 
-float* pose;
-int value=30;
-
-ros::NodeHandle quad_ard;
-
-void pose_setter(const sensor_msgs::JointState &joint_msg)
+// Main() function: where the execution of
+// program begins
+int main()
 {
-  // pose=joint_msg.position;
-  value+=20;
+	// Prints hello world
+	cout << "Hello World";
+
+	return 0;
 }
-ros::Subscriber<sensor_msgs::JointState> sub("joint_states", &pose_setter );
