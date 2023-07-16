@@ -40,24 +40,24 @@
     <child link="calf_1"/>
     <axis xyz="0 0 1"/>
     <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="50.0"/>
-    <origin rpy="0 0 0" xyz="0 -6 0"/>
+    <origin rpy="0 0 0" xyz="6 0 0"/>
   </joint>
   <joint name="ankle_1" type="revolute">
     <parent link="calf_1"/>
     <child link="foot_1"/>
     <axis xyz="0 0 1"/>
     <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="50.0"/>
-    <origin rpy="0 0 0" xyz="0 -4 0"/>
+    <origin rpy="0 0 0" xyz="4 0 0"/>
   </joint>
   <link name="thigh_1">
     <collision>
-      <origin rpy="1.57 0.0 0.0" xyz="0.0 -3 0"/>
+      <origin rpy="0 1.57 0" xyz="3 0 0"/>
       <geometry>
         <cylinder length="6" radius="0.25"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.57 0.0 0" xyz="0.0 -3 0"/>
+      <origin rpy="0 1.57 0" xyz="3 0 0"/>
       <geometry>
         <cylinder length="6" radius="0.25"/>
       </geometry>
@@ -69,13 +69,13 @@
   </link>
   <link name="calf_1">
     <collision>
-      <origin rpy="1.57 0.0 0.0" xyz="0.0 -2 0.0"/>
+      <origin rpy="0 1.57 0.0" xyz="2 0 0.0"/>
       <geometry>
         <cylinder length="4" radius="0.25"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.57 0.0 0.0" xyz="0.0 -2 0.0"/>
+      <origin rpy="0 1.57 0.0" xyz="2 0 0.0"/>
       <geometry>
         <cylinder length="4" radius="0.25"/>
       </geometry>
@@ -93,13 +93,13 @@
   </link>
   <link name="foot_1">
     <collision>
-      <origin rpy="1.57 0.0 0.0" xyz="0.0 -1 0.0"/>
+      <origin rpy="0.0 1.57 0.0" xyz="1 0 0.0"/>
       <geometry>
         <cylinder length="2" radius="0.25"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.57 0.0 0.0" xyz="0.0 -1 0.0"/>
+      <origin rpy="0.0 1.57 0.0" xyz="1 0 0.0"/>
       <geometry>
         <cylinder length="2" radius="0.25"/>
       </geometry>

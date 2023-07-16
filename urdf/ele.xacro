@@ -14,24 +14,24 @@
             <child link="calf_${leg_no}"/>
             <axis xyz="0 0 1"/>
             <limit lower="-3.14159" upper="3.14159" velocity="50.0" effort="1000.0"/>
-            <origin xyz="0 -6 0" rpy="0 0 0"/>
+            <origin xyz="6 0 0" rpy="0 0 0"/>
         </joint> 
         <joint name="ankle_${leg_no}" type="revolute">
             <parent link="calf_${leg_no}"/>
             <child link="foot_${leg_no}"/>
             <axis xyz="0 0 1"/>
             <limit lower="-3.14159" upper="3.14159" velocity="50.0" effort="1000.0"/>
-            <origin xyz="0 -4 0" rpy="0 0 0"/>
+            <origin xyz="4 0 0" rpy="0 0 0"/>
         </joint> 
         <link name="thigh_${leg_no}">
             <collision>
-                <origin xyz="0.0 -3 0" rpy="1.57 0.0 0.0"/>
+                <origin xyz="3 0 0" rpy="0 1.57 0"/>
                 <geometry>
                     <cylinder radius="0.25" length="6"/>
                 </geometry>
             </collision>
             <visual>
-                <origin xyz="0.0 -3 0" rpy="1.57 0.0 0"/>
+                <origin xyz="3 0 0" rpy="0 1.57 0"/>
                 <geometry>
                     <cylinder radius="0.25" length="6"/>
                 </geometry>
@@ -43,13 +43,13 @@
         </link>
         <link name="calf_${leg_no}">
             <collision>
-                <origin xyz="0.0 -2 0.0" rpy="1.57 0.0 0.0"/>
+                <origin xyz="2 0 0.0" rpy="0 1.57 0.0"/>
                 <geometry>
                     <cylinder radius="0.25" length="4"/>
                 </geometry>
             </collision>
             <visual>
-                <origin xyz="0.0 -2 0.0" rpy="1.57 0.0 0.0"/>
+                <origin xyz="2 0 0.0" rpy="0 1.57 0.0"/>
                 <geometry>
                     <cylinder radius="0.25" length="4"/>
                 </geometry>
@@ -68,13 +68,13 @@
         </link>
         <link name="foot_${leg_no}">
             <collision>
-                <origin xyz="0.0 -1 0.0" rpy="1.57 0.0 0.0"/>
+                <origin xyz="1 0 0.0" rpy="0.0 1.57 0.0"/>
                 <geometry>
                     <cylinder radius="0.25" length="2"/>
                 </geometry>
             </collision>
             <visual>
-                <origin xyz="0.0 -1 0.0" rpy="1.57 0.0 0.0"/>
+                <origin xyz="1 0 0.0" rpy="0.0 1.57 0.0"/>
                 <geometry>
                     <cylinder radius="0.25" length="2"/>
                 </geometry>

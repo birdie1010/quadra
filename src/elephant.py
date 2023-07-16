@@ -9,8 +9,8 @@ import time
 import math
 
 num_of_pt=10
-leg_travel_dist=4
-robo_height=7.5
+leg_travel_dist=2
+robo_height=9
 # a function to give the required number of pts as a list
 #give theta in degrees for lines. Otherwise not required.give it in angle from -180 to 180.
 def point_finder(path_type,foci,radius,number_of_pts,theta=None):
@@ -67,62 +67,66 @@ class legjoints:
         self.knee_state_vel=0
         self.step_index=0
         self.position_no=0
-    def fd_mv_up(self,circ_radius=None,center=None):
-        #each call moves to next position
-        global joint_states
-        if(self.position_no==0):
-            if(circ_radius==None):
-                self.points=point_finder('circle',(0,robo_height),leg_travel_dist/2,num_of_pt)
-            elif(center==None):
-                self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
-            else:
-                self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
-            self.inv_kin_list()
-            # print('Points : ',self.points)
-            # print('angles : ',self.angles)    
-        if(self.position_no<len(self.angles)):
-            joint_states.name.append(f'rota_{self.leg_no}')
-            joint_states.position.append(self.angles[self.position_no][0])
-            joint_states.name.append(f'knee_{self.leg_no}')
-            joint_states.position.append(self.angles[self.position_no][1])
-            # print(joint_states)
-            # if(self.position_no<len(self.angles)-1):
-            # print(self.position_no)
-            self.position_no+=1
-            self.position_no%=num_of_pt
-        else:
-            return        
 
-    def inv_kin_single(self,point):
+    def fd_mv_up(self,circ_radius=None,center=None):
+    #     #each call moves to next position
+    #     global joint_states
+    #     if(self.position_no==0):
+    #         if(circ_radius==None):
+    #             self.points=point_finder('circle',(0,robo_height),leg_travel_dist/2,num_of_pt)
+    #         elif(center==None):
+    #             self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
+    #         else:
+    #             self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
+    #         self.inv_kin_list()
+    #         # print('Points : ',self.points)
+    #         # print('angles : ',self.angles)    
+    #     if(self.position_no<len(self.angles)):
+    #         joint_states.name.append(f'rota_{self.leg_no}')
+    #         joint_states.position.append(self.angles[self.position_no][0])
+    #         joint_states.name.append(f'knee_{self.leg_no}')
+    #         joint_states.position.append(self.angles[self.position_no][1])
+    #         # print(joint_states)
+    #         # if(self.position_no<len(self.angles)-1):
+    #         # print(self.position_no)
+    #         self.position_no+=1
+    #         self.position_no%=num_of_pt
+    #     else:
+    #         return 
+          pass       
+
+    def inv_kin_single(self,point,len1,len2):
         x=point[0]
         y=point[1]
-        l1=self.thigh_len
-        l2=self.ankle_len
-        c2=((x**2)+(y**2)-(l1**2)-(l2**2))/(2*l1*l2)
+        c2=((x**2)+(y**2)-(len1**2)-(len2**2))/(2*len1*len2)
         if(c2<=1 and c2>=-1):
             s2=math.sqrt(1-(c2**2))
             theta2=math.atan2(s2,c2)
         else:
             print('Cos value error for knee')
             return None
-        A=l1+(l2*c2)
-        B=(l2*s2)
+        A=len1+(len2*c2)
+        B=(len2*s2)
         c1=((A*x)+(B*y))/((A**2)+(B**2))
         if(c1<=1 and c1>=-1):
-            s1=math.sqrt(1-(c1**2))
+            s1=-math.sqrt(1-(c1**2))        #need a soln in 3rd or 4th quad sin negative
             theta1=math.atan2(s1,c1)
         else:
             print('Cos value error for hip')
             return None
         if(theta1 != None and theta2 != None):
             # (self.hip_state_pos,self.knee_state_pos)=(theta1,theta2)
-            return (theta1,-theta2)
+            return (theta1,theta2)
+        
+    def inv_kin_single_3link():
+        pass
 
-    def inv_kin_list(self):
+    def inv_kin_list(self,link_no:int,len1:float,len2:float,len3:float=0):
         angles=[]
-        for i in range(len(self.points)):
-            angles.append(self.inv_kin_single(self.points[i]))
-        self.angles=angles
+        if(link_no==2):
+            for i in range(len(self.points)):
+                hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
+                self.angles.append((hip,0,ankle))
 
     def fd_kin_single(self,angles):
         l1=self.thigh_len
@@ -131,21 +135,24 @@ class legjoints:
         y=(l1*math.sin(angles[0]))+(l2*math.sin(angles[0]+angles[1]))
         return ((round(x,4),round(y,4)))
 
-    def fd_mv_dwn(self,circ_radius=None):
+    def fd_mv_dwn(self,leg_pos,circ_radius=None):
         global joint_states
         if(self.position_no==0):
             if(circ_radius==None):
                 self.points=point_finder('linear',(0,robo_height),leg_travel_dist/2,num_of_pt,180)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
-            self.inv_kin_list()
+            self.inv_kin_list(2,self.l1+self.l2,self.l3)
+            # self.inv_kin_list(2,10,2)
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
-            joint_states.name.append(f'rota_{self.leg_no}')
+            joint_states.name.append(f'hip_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
-            joint_states.position.append(self.angles[self.position_no][1])
+            joint_states.position.append(0)
+            joint_states.name.append(f'ankle_{self.leg_no}')
+            joint_states.position.append(self.angles[self.position_no][2])
             # print(joint_states)
             # if(self.position_no<len(self.angles)-1):
             self.position_no+=1
@@ -286,12 +293,12 @@ def talker():
         # legs.gait('Trot')
         # legs.stop=True
         # legs.turn('right')
-        leg1.fd_mv_dwn()
-        for i in range(8):
-            js_real.data.append(int(joint_states.position[i]*180/3.14))
+        leg1.fd_mv_dwn('front')
+        # for i in range(8):
+            # js_real.data.append(int(joint_states.position[i]*180/3.14))
         # print(js_real.data)
 
-
+        # print(joint_states)
         pub.publish(joint_states)
         pub_real.publish(js_real)
         rate.sleep()

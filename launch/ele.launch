@@ -2,8 +2,8 @@
    <!-- Load the urdf into the parameter server. -->
    <param name="robot_description" textfile="$(find testbot_description)/urdf/ele.urdf"/>
    <param name="contin_walk" value="True"/>
-   <param name="robo_height" value="7.5"/>
-    <node pkg="testbot_description" type="elephant.py" name="joint_st_pub">
+   <param name="robo_height" value="11.5"/>
+    <node pkg="testbot_description" type="elephant.py" name="joint_st_pub" output="screen">
         
     </node>
    <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub" >

@@ -68,7 +68,7 @@ Visualization Manager:
       Collision Enabled: false
       Enabled: true
       Links:
-        All Links Enabled: true
+        All Links Enabled: false
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
@@ -77,17 +77,17 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
+          Value: false
         chassis:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
+          Value: false
         foot_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
+          Value: false
         map:
           Alpha: 1
           Show Axes: false
@@ -96,7 +96,7 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
+          Value: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -179,9 +179,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3953983783721924
+      Pitch: 0.15539854764938354
       Target Frame: <Fixed Frame>
-      Yaw: 4.973598480224609
+      Yaw: 4.778594970703125
     Saved: ~
 Window Geometry:
   Displays:
