@@ -9,7 +9,7 @@ import time
 import math
 
 num_of_pt=10
-leg_travel_dist=2
+leg_travel_dist=3
 robo_height=9
 # a function to give the required number of pts as a list
 #give theta in degrees for lines. Otherwise not required.give it in angle from -180 to 180.
@@ -39,7 +39,7 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         division=radius/number_of_pts  #radius used as total length of line
         # print(division)
         point_list.append(ini_pt)
-        for i in range(number_of_pts-1):
+        for i in range(number_of_pts):
             length+=division
             length=round(length,4)  #binary calculation error is coming if round not included
             # print(length)
@@ -100,17 +100,19 @@ class legjoints:
         y=point[1]
         c2=((x**2)+(y**2)-(len1**2)-(len2**2))/(2*len1*len2)
         if(c2<=1 and c2>=-1):
-            s2=math.sqrt(1-(c2**2))
-            theta2=math.atan2(s2,c2)
+            theta2=math.acos(c2)
+            # s2=math.sqrt(1-(c2**2))
+            # theta2=math.atan2(s2,c2)
         else:
-            print('Cos value error for knee')
+            print('Cos value error for c2')
             return None
         A=len1+(len2*c2)
-        B=(len2*s2)
+        B=(len2*math.sin(theta2))
         c1=((A*x)+(B*y))/((A**2)+(B**2))
+        # print(math.acos(c1)*180/3.14)
         if(c1<=1 and c1>=-1):
-            s1=-math.sqrt(1-(c1**2))        #need a soln in 3rd or 4th quad sin negative
-            theta1=math.atan2(s1,c1)
+            theta1=-math.acos(c1)   #require value in third or fourth quad. So -ve of ans of arccos. Its ans in 1st or 2nd quad
+            # print(theta1*180/3.14)
         else:
             print('Cos value error for hip')
             return None
@@ -139,10 +141,12 @@ class legjoints:
         global joint_states
         if(self.position_no==0):
             if(circ_radius==None):
-                self.points=point_finder('linear',(0,robo_height),leg_travel_dist/2,num_of_pt,180)
+                self.points=point_finder('linear',(leg_travel_dist*0.75,-robo_height),leg_travel_dist,num_of_pt,180)
+                # print(self.points)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
             self.inv_kin_list(2,self.l1+self.l2,self.l3)
+            # print(self.angles)
             # self.inv_kin_list(2,10,2)
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
