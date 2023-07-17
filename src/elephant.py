@@ -123,13 +123,16 @@ class legjoints:
     def inv_kin_single_3link():
         pass
 
-    def inv_kin_list(self,link_no:int,len1:float,len2:float,len3:float=0):
+    def inv_kin_list(self,link_no:int,leg_pos,len1:float,len2:float,len3:float=0):
         angles=[]
         if(link_no==2):
             for i in range(len(self.points)):
                 hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
-                self.angles.append((hip,0,ankle))
-
+                if(leg_pos=='hind'):
+                    self.angles.append((hip,0,ankle))
+                elif(leg_pos=='front'):
+                    self.angles.append((3.14-hip,0,-ankle))
+            self.angles.reverse()
     def fd_kin_single(self,angles):
         l1=self.thigh_len
         l2=self.ankle_len
@@ -145,7 +148,7 @@ class legjoints:
                 # print(self.points)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
-            self.inv_kin_list(2,self.l1+self.l2,self.l3)
+            self.inv_kin_list(2,leg_pos,self.l1+self.l2,self.l3)
             # print(self.angles)
             # self.inv_kin_list(2,10,2)
             # print('Points : ',self.points)
