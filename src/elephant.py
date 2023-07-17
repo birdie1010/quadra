@@ -9,7 +9,7 @@ import time
 import math
 
 num_of_pt=10        #should be even
-leg_travel_dist=3
+leg_travel_dist=1.561    #cannot be independent should be dep on other roboheight. So chnaged later
 robo_height=9
 # a function to give the required number of pts as a list
 #give theta in degrees for lines. Otherwise not required.give it in angle from -180 to 180.
@@ -56,11 +56,11 @@ def ori_finder(ini,mid,fin):
     division=(mid-ini)*2/(num_of_pt-1)
     orient=[]
 
-    for i in range((num_of_pt)/2):
+    for i in range(int(num_of_pt/2)):
         orient.append(ini+(division*i))
 
     division=(fin-mid)*2/(num_of_pt-1)
-    for i in range((num_of_pt)/2):
+    for i in range(int(num_of_pt/2)-1):
         orient.append(mid+(division*i))
 
     orient.append(fin)
@@ -69,13 +69,14 @@ def ori_finder(ini,mid,fin):
 
 
 class legjoints:
-    global num_of_pt,leg_travel_dist,pub,robo_height
+    global num_of_pt,leg_travel_dist,robo_height
     l1=6
     l2=4
     l3=2
     points=[]
     angles=[]
     def __init__(self,leg_no=1):
+        global leg_travel_dist
         self.leg_no=leg_no
         self.hip_state_pos=PI/6
         self.knee_state_pos=-PI/6
@@ -83,6 +84,7 @@ class legjoints:
         self.knee_state_vel=0
         self.step_index=0
         self.position_no=0
+        leg_travel_dist=self.ltd_finder(robo_height)
 
     def fd_mv_up(self,leg_pos,circ_radius=None,center=None):
         #each call moves to next position
@@ -91,12 +93,14 @@ class legjoints:
             self.points.clear()
             self.angles.clear()
             if(circ_radius==None):
-                self.points=point_finder('circle',(0,robo_height-2),leg_travel_dist/2,num_of_pt)
+                self.points=point_finder('circle',(0,robo_height-2),2*leg_travel_dist,num_of_pt)      #circle of diameter 4ltd required. Because duty factor is only 0.25(approx)
             elif(center==None):
                 self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             else:
                 self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
+            # print('Points found Fd mv up')
             self.inv_kin_list_3link(leg_pos,self.l1,self.l2)
+            # print('Angles found Fd mv up')
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
@@ -123,7 +127,7 @@ class legjoints:
             # s2=math.sqrt(1-(c2**2))
             # theta2=math.atan2(s2,c2)
         else:
-            print('Cos value error for c2')
+            print(f'Cos value error for c2 on pt ({x},{y})')
             return None
         A=len1+(len2*c2)
         B=(len2*math.sin(theta2))
@@ -140,19 +144,16 @@ class legjoints:
             return (theta1,theta2)
         
     def inv_kin_list_3link(self,leg_pos,len1:float,len2:float):
-        inih,inik=self.inv_kin_single(self.points[0],len1,len2)
-        finh,fink=self.inv_kin_single(self.points[-1],len1,len2)
-        ori=ori_finder(-(inih-inik)-1.57,-1.57,-(finh-fink)-1.57)
-        print('value',inih,inik,finh,fink)
-        print('ori',ori)
-        # print(len(ori),len(self.points))
-        for i in range(len(self.points)):
-            hip,knee=self.inv_kin_single(self.points[i],len1,len2)
-            print(hip,knee)
-            if(leg_pos=='hind'):
+        if(leg_pos=='front'):
+            inih,inik=self.inv_kin_single(self.points[0],len1,len2)
+            finh,fink=self.inv_kin_single(self.points[-1],len1,len2)
+            ori=ori_finder(-(inih-inik)-1.57,-1,-(finh-fink)-1.57)
+            # print('value',inih,inik,finh,fink)
+            # print('ori',ori)
+            # print(len(ori),len(self.points))
+            for i in range(len(self.points)):
+                hip,knee=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((hip,-knee,ori[i]))
-            elif(leg_pos=='front'):
-                self.angles.append((3.14-hip,knee,ori[i]))
 
     def inv_kin_list(self,link_no:int,leg_pos,len1:float,len2:float,len3:float=0):
         for i in range(len(self.points)):
@@ -198,7 +199,13 @@ class legjoints:
         else:
             return        
 
-
+    def ltd_finder(self,height:float) ->float:
+        a=(self.l1+self.l2)**2
+        b=(height-self.l3)**2
+        l=math.sqrt((a-b)/4)-0.001       #-0.001 for safety otherwise cos may show error.  Arccos(1.00000001) may occur
+        # print(a,b)
+        # print('leg travel dist',l)
+        return l
 
 class move_fns:
     global num_of_pt,leg_travel_dist,pub,rate,robo_height,joint_states
@@ -302,6 +309,7 @@ class move_fns:
                 self.cycle=int(self.i/num_of_pt)
 
 
+robo_height = rospy.get_param('robo_height',7.5)
 leg1=legjoints(1)
 leg2=legjoints(2)
 leg3=legjoints(3)
@@ -319,7 +327,6 @@ def talker():
     legs=move_fns(leg1,leg2,leg3,leg4)
 
     while not rospy.is_shutdown():  
-        robo_height = rospy.get_param('robo_height',7.5)
         joint_states.name.clear()
         joint_states.position.clear()
         js_real.data.clear()
@@ -331,7 +338,7 @@ def talker():
         # legs.gait('Trot')
         # legs.stop=True
         # legs.turn('right')
-        leg1.fd_mv_up('hind')
+        leg1.fd_mv_up('front')
         # for i in range(8):
             # js_real.data.append(int(joint_states.position[i]*180/3.14))
         # print(js_real.data)
