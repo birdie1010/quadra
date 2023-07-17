@@ -144,10 +144,10 @@ class legjoints:
             return (theta1,theta2)
         
     def inv_kin_list_3link(self,leg_pos,len1:float,len2:float):
-        if(leg_pos=='front'):
-            inih,inik=self.inv_kin_single(self.points[0],len1,len2)
-            finh,fink=self.inv_kin_single(self.points[-1],len1,len2)
-            ori=ori_finder(-(inih-inik)-1.57,-1,-(finh-fink)-1.57)
+        inih,inik=self.inv_kin_single(self.points[0],len1,len2)
+        finh,fink=self.inv_kin_single(self.points[-1],len1,len2)
+        if(leg_pos=='hind'):
+            ori=ori_finder(-(inih-inik)-1.57,1,-(finh-fink)-1.57)
             # print('value',inih,inik,finh,fink)
             # print('ori',ori)
             # print(len(ori),len(self.points))
@@ -155,6 +155,15 @@ class legjoints:
                 hip,knee=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((hip,-knee,ori[i]))
 
+        elif(leg_pos=='front'):
+            ori=ori_finder(1.57+inih-inik,-1,1.57+finh-fink)
+            # print('value',inih,inik,finh,fink)
+            # print('ori',ori)
+            # print(len(ori),len(self.points))
+            for i in range(len(self.points)):
+                hip,knee=self.inv_kin_single(self.points[i],len1,len2)
+                self.angles.append((3.14-hip,knee,ori[i]))
+            self.angles.reverse()
     def inv_kin_list(self,link_no:int,leg_pos,len1:float,len2:float,len3:float=0):
         for i in range(len(self.points)):
             hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
