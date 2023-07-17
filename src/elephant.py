@@ -8,7 +8,7 @@ from std_msgs.msg import Float64MultiArray
 import time
 import math
 
-num_of_pt=10
+num_of_pt=10        #should be even
 leg_travel_dist=3
 robo_height=9
 # a function to give the required number of pts as a list
@@ -50,7 +50,23 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
         print('Error give proper path type')
         return None
     return point_list
- 
+
+def ori_finder(ini,mid,fin):
+    global num_of_pt
+    division=(mid-ini)*2/(num_of_pt-1)
+    orient=[]
+
+    for i in range((num_of_pt)/2):
+        orient.append(ini+(division*i))
+
+    division=(fin-mid)*2/(num_of_pt-1)
+    for i in range((num_of_pt)/2):
+        orient.append(mid+(division*i))
+
+    orient.append(fin)
+
+    return orient
+
 
 class legjoints:
     global num_of_pt,leg_travel_dist,pub,robo_height
@@ -68,32 +84,35 @@ class legjoints:
         self.step_index=0
         self.position_no=0
 
-    def fd_mv_up(self,circ_radius=None,center=None):
-    #     #each call moves to next position
-    #     global joint_states
-    #     if(self.position_no==0):
-    #         if(circ_radius==None):
-    #             self.points=point_finder('circle',(0,robo_height),leg_travel_dist/2,num_of_pt)
-    #         elif(center==None):
-    #             self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
-    #         else:
-    #             self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
-    #         self.inv_kin_list()
-    #         # print('Points : ',self.points)
-    #         # print('angles : ',self.angles)    
-    #     if(self.position_no<len(self.angles)):
-    #         joint_states.name.append(f'rota_{self.leg_no}')
-    #         joint_states.position.append(self.angles[self.position_no][0])
-    #         joint_states.name.append(f'knee_{self.leg_no}')
-    #         joint_states.position.append(self.angles[self.position_no][1])
-    #         # print(joint_states)
-    #         # if(self.position_no<len(self.angles)-1):
-    #         # print(self.position_no)
-    #         self.position_no+=1
-    #         self.position_no%=num_of_pt
-    #     else:
-    #         return 
-          pass       
+    def fd_mv_up(self,leg_pos,circ_radius=None,center=None):
+        #each call moves to next position
+        global joint_states
+        if(self.position_no==0):
+            self.points.clear()
+            self.angles.clear()
+            if(circ_radius==None):
+                self.points=point_finder('circle',(0,robo_height-2),leg_travel_dist/2,num_of_pt)
+            elif(center==None):
+                self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
+            else:
+                self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
+            self.inv_kin_list_3link(leg_pos,self.l1,self.l2)
+            # print('Points : ',self.points)
+            # print('angles : ',self.angles)    
+        if(self.position_no<len(self.angles)):
+            joint_states.name.append(f'hip_{self.leg_no}')
+            joint_states.position.append(self.angles[self.position_no][0])
+            joint_states.name.append(f'knee_{self.leg_no}')
+            joint_states.position.append(self.angles[self.position_no][1])
+            joint_states.name.append(f'ankle_{self.leg_no}')
+            joint_states.position.append(self.angles[self.position_no][2])
+            # print(joint_states)
+            # if(self.position_no<len(self.angles)-1):
+            # print(self.position_no)
+            self.position_no+=1
+            self.position_no%=num_of_pt
+        else:
+            return       
 
     def inv_kin_single(self,point,len1,len2):
         x=point[0]
@@ -120,19 +139,31 @@ class legjoints:
             # (self.hip_state_pos,self.knee_state_pos)=(theta1,theta2)
             return (theta1,theta2)
         
-    def inv_kin_single_3link():
-        pass
+    def inv_kin_list_3link(self,leg_pos,len1:float,len2:float):
+        inih,inik=self.inv_kin_single(self.points[0],len1,len2)
+        finh,fink=self.inv_kin_single(self.points[-1],len1,len2)
+        ori=ori_finder(-(inih-inik)-1.57,-1.57,-(finh-fink)-1.57)
+        print('value',inih,inik,finh,fink)
+        print('ori',ori)
+        # print(len(ori),len(self.points))
+        for i in range(len(self.points)):
+            hip,knee=self.inv_kin_single(self.points[i],len1,len2)
+            print(hip,knee)
+            if(leg_pos=='hind'):
+                self.angles.append((hip,-knee,ori[i]))
+            elif(leg_pos=='front'):
+                self.angles.append((3.14-hip,knee,ori[i]))
 
     def inv_kin_list(self,link_no:int,leg_pos,len1:float,len2:float,len3:float=0):
-        angles=[]
-        if(link_no==2):
-            for i in range(len(self.points)):
-                hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
-                if(leg_pos=='hind'):
-                    self.angles.append((hip,0,ankle))
-                elif(leg_pos=='front'):
-                    self.angles.append((3.14-hip,0,-ankle))
+        for i in range(len(self.points)):
+            hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
+            if(leg_pos=='hind'):
+                self.angles.append((hip,0,ankle))
+            elif(leg_pos=='front'):
+                self.angles.append((3.14-hip,0,-ankle))
+        if(leg_pos=='front'):
             self.angles.reverse()
+
     def fd_kin_single(self,angles):
         l1=self.thigh_len
         l2=self.ankle_len
@@ -300,7 +331,7 @@ def talker():
         # legs.gait('Trot')
         # legs.stop=True
         # legs.turn('right')
-        leg1.fd_mv_dwn('front')
+        leg1.fd_mv_up('hind')
         # for i in range(8):
             # js_real.data.append(int(joint_states.position[i]*180/3.14))
         # print(js_real.data)
