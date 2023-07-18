@@ -177,6 +177,7 @@ class legjoints:
 
     def inv_kin_list(self,len1:float,len2:float):
         leg_pos=self.leg_pos
+        self.posi=(self.points[-1][0],self.points[-1][1])
         if(leg_pos=='hind'):
             for i in range(len(self.points)):
                 # print('hind called')
@@ -187,6 +188,7 @@ class legjoints:
             for i in range(len(self.points)):
                 hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,0,-ankle))
+        # print(self.posi)
             # self.angles.reverse()
 
     def fd_kin_single(self,angles):
