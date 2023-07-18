@@ -73,10 +73,12 @@ class legjoints:
     l1=6
     l2=4
     l3=2
-    points=[]
-    angles=[]
-    def __init__(self,leg_no=1):
+    
+    def __init__(self,leg_pos,leg_no=1):
         global leg_travel_dist
+        self.points=[]
+        self.angles=[]
+        self.leg_pos=leg_pos
         self.leg_no=leg_no
         self.hip_state_pos=PI/6
         self.knee_state_pos=-PI/6
@@ -86,9 +88,10 @@ class legjoints:
         self.position_no=0
         leg_travel_dist=self.ltd_finder(robo_height)
 
-    def fd_mv_up(self,leg_pos,circ_radius=None,center=None):
+    def fd_mv_up(self,circ_radius=None,center=None):
         #each call moves to next position
         global joint_states
+        leg_pos=self.leg_pos
         if(self.position_no==0):
             self.points.clear()
             self.angles.clear()
@@ -98,13 +101,13 @@ class legjoints:
                 self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             else:
                 self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
-            print(f'Points found Fd mv up for leg{self.leg_no}')
-            self.inv_kin_list_3link(leg_pos,self.l1,self.l2)
+            # print(f'Points found Fd mv up for leg{self.leg_no}')
+            self.inv_kin_list_3link(self.l1,self.l2)
             # print('Angles found Fd mv up')
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
-            print(f'insisde fd mv up {self.leg_no}')
+            # print(f'insisde fd mv up {self.leg_no}')
             joint_states.name.append(f'hip_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
@@ -144,7 +147,8 @@ class legjoints:
             # (self.hip_state_pos,self.knee_state_pos)=(theta1,theta2)
             return (theta1,theta2)
         
-    def inv_kin_list_3link(self,leg_pos,len1:float,len2:float):
+    def inv_kin_list_3link(self,len1:float,len2:float):
+        leg_pos=self.leg_pos
         inih,inik=self.inv_kin_single(self.points[0],len1,len2)
         finh,fink=self.inv_kin_single(self.points[-1],len1,len2)
         if(leg_pos=='hind'):
@@ -165,14 +169,18 @@ class legjoints:
                 hip,knee=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,knee,ori[i]))
             self.angles.reverse()
-    def inv_kin_list(self,link_no:int,leg_pos,len1:float,len2:float,len3:float=0):
-        for i in range(len(self.points)):
-            hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
-            if(leg_pos=='hind'):
+    
+    def inv_kin_list(self,len1:float,len2:float):
+        leg_pos=self.leg_pos
+        if(leg_pos=='hind'):
+            for i in range(len(self.points)):
+                # print('hind called')
+                hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((hip,0,ankle))
-            elif(leg_pos=='front'):
+        elif(leg_pos=='front'):
+            for i in range(len(self.points)):
+                hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,0,-ankle))
-        if(leg_pos=='front'):
             self.angles.reverse()
 
     def fd_kin_single(self,angles):
@@ -182,7 +190,8 @@ class legjoints:
         y=(l1*math.sin(angles[0]))+(l2*math.sin(angles[0]+angles[1]))
         return ((round(x,4),round(y,4)))
 
-    def fd_mv_dwn(self,leg_pos,circ_radius=None):
+    def fd_mv_dwn(self,circ_radius=None):
+        leg_pos=self.leg_pos
         global joint_states
         if(self.position_no==0):
             self.points.clear()
@@ -192,17 +201,17 @@ class legjoints:
                 # print(self.points)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
-            self.inv_kin_list(2,leg_pos,self.l1+self.l2,self.l3)
+            self.inv_kin_list(self.l1+self.l2,self.l3)
             # print(self.angles)
             # self.inv_kin_list(2,10,2)
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
-            print(f'in fd mv dwn {self.leg_no}')
+            # print(f'in fd mv dwn {self.leg_no}')
             joint_states.name.append(f'hip_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
-            joint_states.position.append(0)
+            joint_states.position.append(self.angles[self.position_no][1])
             joint_states.name.append(f'ankle_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][2])
             # print(joint_states.name)
@@ -223,12 +232,7 @@ class legjoints:
 class move_fns:
     global num_of_pt,leg_travel_dist,pub,rate,robo_height,joint_states
     def __init__(self,l1:legjoints,l2:legjoints,l3:legjoints,l4:legjoints) -> None:
-        self.leg1=l1
-        self.leg2=l2
-        self.leg3=l3
-        self.leg4=l4
         self.legs=[l1,l2,l3,l4]
-        self.leg_pos=['hind','front','hind','front']
         self.i=0
         self.cycle=0
         self.prev_cycle=None
@@ -240,20 +244,22 @@ class move_fns:
             if(self.contin or self.prev_cycle==self.cycle):
                 self.stop=False  #if comming in after stopping this is required
                 if(self.i==0):      #first step is a smaller step to initialize gait
-                    pass
                 #    self.leg1.fd_mv_up(leg_travel_dist/4)
                 #    self.leg2.fd_mv_dwn(leg_travel_dist/4)
                 #    self.leg3.fd_mv_up(leg_travel_dist/4)
                 #    self.leg4.fd_mv_dwn(leg_travel_dist/4)
+                    pass
                 gait_pos=self.cycle%4
-                print(gait_pos)
+
                 for j in range(4):
-                    if(gait_pos!=j):
-                        print(f'leg {j} moving down in {self.leg_pos[j]}')
-                        self.legs[j].fd_mv_dwn(self.leg_pos[j])
+                    # print(self.i,gait_pos,j)
+                    if(gait_pos==j):
+                        # print(f'leg{self.legs[j].leg_no} moving up')
+                        self.legs[j].fd_mv_up()
                     else:
-                        print(f'leg{j} moving up')
-                        # self.legs[j].fd_mv_up(self.leg_pos[j])
+                        # pass
+                        # print(f'leg {j} moving down')
+                        self.legs[j].fd_mv_dwn()
 
                 self.prev_cycle=self.cycle
                 self.i+=1
@@ -277,59 +283,12 @@ class move_fns:
             #         self.i=0
             #     print('stopping')
 
-    #for sitting and standing.Use while quadra at rest
-    def sns(self,height):
-        # global robo_height,joint_states
-        # print(height)
-        angles=leg1.inv_kin_single((height,0))  #jerk will be there need to be edited
-        print(angles)
-        # joint_states.name.append(f'rota_1')
-        # joint_states.position.append(angles[0])
-        for i in range(4):
-            # print('heo')
-            joint_states.name.append(f'rota_{i+1}')
-            joint_states.position.append(angles[0])
-            joint_states.name.append(f'knee_{i+1}')
-            joint_states.position.append(angles[1])
-        print(joint_states)
-
-    def turn(self,direction):
-        if(self.stop or self.prev_cycle==self.cycle):
-            if(direction=='left'):
-                if(self.cycle%2==0):                
-                    self.leg1.fd_mv_up()
-                    self.leg2.fd_mv_dwn(leg_travel_dist/4)
-                    self.leg3.fd_mv_dwn(leg_travel_dist/4)
-                    self.leg4.fd_mv_up()
-                else:
-                    self.leg1.fd_mv_dwn()
-                    self.leg2.fd_mv_up(leg_travel_dist/4,(0,robo_height))
-                    self.leg3.fd_mv_up(leg_travel_dist/4,(0,robo_height))
-                    self.leg4.fd_mv_dwn()
-                self.prev_cycle=self.cycle
-                self.i+=1
-                self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
-            elif(direction=='right'):
-                if(self.cycle%2==0):                
-                    self.leg1.fd_mv_up(leg_travel_dist/4,(0,robo_height))
-                    self.leg2.fd_mv_dwn()
-                    self.leg3.fd_mv_dwn()
-                    self.leg4.fd_mv_up(leg_travel_dist/4,(0,robo_height))
-                else:
-                    self.leg1.fd_mv_dwn(leg_travel_dist/4)
-                    self.leg2.fd_mv_up(leg_travel_dist/4,(0,robo_height))
-                    self.leg3.fd_mv_up(leg_travel_dist/4,(0,robo_height))
-                    self.leg4.fd_mv_dwn(leg_travel_dist/4)
-                self.prev_cycle=self.cycle
-                self.i+=1
-                self.cycle=int(self.i/num_of_pt)
-
 
 robo_height = rospy.get_param('robo_height',7.5)
-leg1=legjoints(1)
-leg2=legjoints(2)
-leg3=legjoints(3)
-leg4=legjoints(4)
+leg1=legjoints('hind',1)
+leg2=legjoints('front',2)
+leg3=legjoints('hind',3)
+leg4=legjoints('front',4)
 joint_states=JointState()
 js_real=Float64MultiArray()
 rospy.init_node('joint_state_publisher')
