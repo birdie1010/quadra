@@ -172,7 +172,7 @@ class legjoints:
                 self.angles.append((3.14-hip,knee,ori[i]))
             # self.angles.reverse()
         self.posi=(self.points[-1][0],self.points[-1][1]+self.l3)
-        print(f'posi for {self.leg_no}',self.posi)
+        # print(f'posi for {self.leg_no}',self.posi)
 
 
     def inv_kin_list(self,len1:float,len2:float):
@@ -210,8 +210,9 @@ class legjoints:
                 if(self.leg_pos=='hind'):
                     self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,180)
                 elif self.leg_pos=='front':
-                        self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,0)
-                print(f'Points by mv down of {self.leg_no}',self.points)
+                    self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,0)
+                    self.points.reverse()
+                # print(f'Points by mv down of {self.leg_no}',self.points)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
             self.inv_kin_list(self.l1+self.l2,self.l3)
