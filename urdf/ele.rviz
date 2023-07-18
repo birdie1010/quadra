@@ -78,6 +78,21 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        calf_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        calf_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        calf_4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         chassis:
           Alpha: 1
           Show Axes: false
@@ -88,11 +103,41 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        foot_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        foot_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        foot_4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         map:
           Alpha: 1
           Show Axes: false
           Show Trail: false
         thigh_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        thigh_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        thigh_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        thigh_4:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -112,13 +157,31 @@ Visualization Manager:
         All Enabled: false
         calf_1:
           Value: true
+        calf_2:
+          Value: true
+        calf_3:
+          Value: true
+        calf_4:
+          Value: true
         chassis:
           Value: true
         foot_1:
           Value: true
+        foot_2:
+          Value: true
+        foot_3:
+          Value: true
+        foot_4:
+          Value: true
         map:
           Value: false
         thigh_1:
+          Value: true
+        thigh_2:
+          Value: true
+        thigh_3:
+          Value: true
+        thigh_4:
           Value: true
       Marker Alpha: 1
       Marker Scale: 5
@@ -132,6 +195,18 @@ Visualization Manager:
             thigh_1:
               calf_1:
                 foot_1:
+                  {}
+            thigh_2:
+              calf_2:
+                foot_2:
+                  {}
+            thigh_3:
+              calf_3:
+                foot_3:
+                  {}
+            thigh_4:
+              calf_4:
+                foot_4:
                   {}
       Update Interval: 0
       Value: true
@@ -199,5 +274,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 2400
-  X: -705
-  Y: 338
+  X: 0
+  Y: 264

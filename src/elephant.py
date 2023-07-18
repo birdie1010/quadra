@@ -98,12 +98,13 @@ class legjoints:
                 self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             else:
                 self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
-            # print('Points found Fd mv up')
+            print(f'Points found Fd mv up for leg{self.leg_no}')
             self.inv_kin_list_3link(leg_pos,self.l1,self.l2)
             # print('Angles found Fd mv up')
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
+            print(f'insisde fd mv up {self.leg_no}')
             joint_states.name.append(f'hip_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
@@ -156,7 +157,7 @@ class legjoints:
                 self.angles.append((hip,-knee,ori[i]))
 
         elif(leg_pos=='front'):
-            ori=ori_finder(1.57+inih-inik,-1,1.57+finh-fink)
+            ori=ori_finder(1.57+inih-inik,-1.57,1.57+finh-fink)
             # print('value',inih,inik,finh,fink)
             # print('ori',ori)
             # print(len(ori),len(self.points))
@@ -184,6 +185,8 @@ class legjoints:
     def fd_mv_dwn(self,leg_pos,circ_radius=None):
         global joint_states
         if(self.position_no==0):
+            self.points.clear()
+            self.angles.clear()
             if(circ_radius==None):
                 self.points=point_finder('linear',(leg_travel_dist*0.75,-robo_height),leg_travel_dist,num_of_pt,180)
                 # print(self.points)
@@ -195,13 +198,14 @@ class legjoints:
             # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
+            print(f'in fd mv dwn {self.leg_no}')
             joint_states.name.append(f'hip_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][0])
             joint_states.name.append(f'knee_{self.leg_no}')
             joint_states.position.append(0)
             joint_states.name.append(f'ankle_{self.leg_no}')
             joint_states.position.append(self.angles[self.position_no][2])
-            # print(joint_states)
+            # print(joint_states.name)
             # if(self.position_no<len(self.angles)-1):
             self.position_no+=1
             self.position_no%=num_of_pt
@@ -218,11 +222,13 @@ class legjoints:
 
 class move_fns:
     global num_of_pt,leg_travel_dist,pub,rate,robo_height,joint_states
-    def __init__(self,l1,l2,l3,l4):
+    def __init__(self,l1:legjoints,l2:legjoints,l3:legjoints,l4:legjoints) -> None:
         self.leg1=l1
         self.leg2=l2
         self.leg3=l3
         self.leg4=l4
+        self.legs=[l1,l2,l3,l4]
+        self.leg_pos=['hind','front','hind','front']
         self.i=0
         self.cycle=0
         self.prev_cycle=None
@@ -230,45 +236,46 @@ class move_fns:
 
     def gait(self,gait_type):
         self.contin=rospy.get_param('/contin_walk',True)
-        if(gait_type.lower()=='trot'):
+        if(gait_type.lower()=='amble'):
             if(self.contin or self.prev_cycle==self.cycle):
                 self.stop=False  #if comming in after stopping this is required
                 if(self.i==0):      #first step is a smaller step to initialize gait
-                   self.leg1.fd_mv_up(leg_travel_dist/4)
-                   self.leg2.fd_mv_dwn(leg_travel_dist/4)
-                   self.leg3.fd_mv_up(leg_travel_dist/4)
-                   self.leg4.fd_mv_dwn(leg_travel_dist/4)
-                elif(self.cycle%2==0):                
-                    self.leg1.fd_mv_up()
-                    self.leg2.fd_mv_dwn()
-                    self.leg3.fd_mv_up()
-                    self.leg4.fd_mv_dwn()
-                else:
-                    self.leg1.fd_mv_dwn()
-                    self.leg2.fd_mv_up()
-                    self.leg3.fd_mv_dwn()
-                    self.leg4.fd_mv_up()
+                    pass
+                #    self.leg1.fd_mv_up(leg_travel_dist/4)
+                #    self.leg2.fd_mv_dwn(leg_travel_dist/4)
+                #    self.leg3.fd_mv_up(leg_travel_dist/4)
+                #    self.leg4.fd_mv_dwn(leg_travel_dist/4)
+                gait_pos=self.cycle%4
+                print(gait_pos)
+                for j in range(4):
+                    if(gait_pos!=j):
+                        print(f'leg {j} moving down in {self.leg_pos[j]}')
+                        self.legs[j].fd_mv_dwn(self.leg_pos[j])
+                    else:
+                        print(f'leg{j} moving up')
+                        # self.legs[j].fd_mv_up(self.leg_pos[j])
+
                 self.prev_cycle=self.cycle
                 self.i+=1
                 self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
                 # print(self.i)
-            elif(self.stop==False):
-                #to stop trot gait and come to rest
-                # for i in range(num_of_pt):
-                if(self.cycle%2==0):                
-                    self.leg1.fd_mv_up(leg_travel_dist/4)
-                    self.leg3.fd_mv_up(leg_travel_dist/4)
-                else:
-                    self.leg2.fd_mv_up(leg_travel_dist/4)
-                    self.leg4.fd_mv_up(leg_travel_dist/4)
-                self.prev_cycle=None
-                self.i+=1
-                # self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
-                if(self.cycle!=int(self.i/num_of_pt)):
-                    self.cycle=0        #this is cycle number not point number
-                    self.stop=True
-                    self.i=0
-                print('stopping')
+            # elif(self.stop==False):
+            #     #to stop trot gait and come to rest
+            #     # for i in range(num_of_pt):
+            #     if(self.cycle%2==0):                
+            #         self.leg1.fd_mv_up(leg_travel_dist/4)
+            #         self.leg3.fd_mv_up(leg_travel_dist/4)
+            #     else:
+            #         self.leg2.fd_mv_up(leg_travel_dist/4)
+            #         self.leg4.fd_mv_up(leg_travel_dist/4)
+            #     self.prev_cycle=None
+            #     self.i+=1
+            #     # self.cycle=int(self.i/num_of_pt)        #this is cycle number not point number
+            #     if(self.cycle!=int(self.i/num_of_pt)):
+            #         self.cycle=0        #this is cycle number not point number
+            #         self.stop=True
+            #         self.i=0
+            #     print('stopping')
 
     #for sitting and standing.Use while quadra at rest
     def sns(self,height):
@@ -344,10 +351,10 @@ def talker():
         if(h!=robo_height):
             legs.sns(h)   
             robo_height=h
-        # legs.gait('Trot')
+        legs.gait('amble')
         # legs.stop=True
         # legs.turn('right')
-        leg1.fd_mv_up('front')
+        # leg1.fd_mv_dwn('front')
         # for i in range(8):
             # js_real.data.append(int(joint_states.position[i]*180/3.14))
         # print(js_real.data)
