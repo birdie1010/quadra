@@ -86,6 +86,7 @@ class legjoints:
         self.knee_state_vel=0
         self.step_index=0
         self.position_no=0
+        self.posi=None
         leg_travel_dist=self.ltd_finder(robo_height)
 
     def fd_mv_up(self,circ_radius=None,center=None):
@@ -96,15 +97,15 @@ class legjoints:
             self.points.clear()
             self.angles.clear()
             if(circ_radius==None):
-                self.points=point_finder('circle',(0,robo_height-2),2*leg_travel_dist,num_of_pt)      #circle of diameter 4ltd required. Because duty factor is only 0.25(approx)
+                self.points=point_finder('circle',(0,robo_height-self.l3),2*leg_travel_dist,num_of_pt)      #circle of diameter 4ltd required. Because duty factor is only 0.25(approx)
             elif(center==None):
                 self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             else:
                 self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
             # print(f'Points found Fd mv up for leg{self.leg_no}')
+            # print('Points : ',self.points)
             self.inv_kin_list_3link(self.l1,self.l2)
             # print('Angles found Fd mv up')
-            # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
             # print(f'insisde fd mv up {self.leg_no}')
@@ -165,11 +166,15 @@ class legjoints:
             # print('value',inih,inik,finh,fink)
             # print('ori',ori)
             # print(len(ori),len(self.points))
+            self.points.reverse()
             for i in range(len(self.points)):
                 hip,knee=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,knee,ori[i]))
-            self.angles.reverse()
-    
+            # self.angles.reverse()
+        self.posi=(self.points[-1][0],self.points[-1][1]+self.l3)
+        print(f'posi for {self.leg_no}',self.posi)
+
+
     def inv_kin_list(self,len1:float,len2:float):
         leg_pos=self.leg_pos
         if(leg_pos=='hind'):
@@ -178,27 +183,35 @@ class legjoints:
                 hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((hip,0,ankle))
         elif(leg_pos=='front'):
+            self.points.reverse()
             for i in range(len(self.points)):
                 hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,0,-ankle))
-            self.angles.reverse()
+            # self.angles.reverse()
 
     def fd_kin_single(self,angles):
-        l1=self.thigh_len
-        l2=self.ankle_len
-        x=(l1*math.cos(angles[0]))+(l2*math.cos(angles[0]+angles[1]))
-        y=(l1*math.sin(angles[0]))+(l2*math.sin(angles[0]+angles[1]))
-        return ((round(x,4),round(y,4)))
+        # print(angles)
+        x=(self.l1*math.cos(angles[0]))+(self.l2*math.cos(angles[0]+angles[1]))+(self.l3*math.cos(angles[0]+angles[1]+angles[2]))
+        y=(self.l1*math.sin(angles[0]))+(self.l2*math.sin(angles[0]+angles[1]))+(self.l3*math.cos(angles[0]+angles[1]+angles[2]))
+        print(x,y)
+        return (round(x,4),round(y,4))
 
     def fd_mv_dwn(self,circ_radius=None):
         leg_pos=self.leg_pos
+        position=(leg_travel_dist*0.75,-robo_height)
         global joint_states
+        if self.posi:
+            position=self.posi
+            # print(self.posi)
         if(self.position_no==0):
             self.points.clear()
             self.angles.clear()
             if(circ_radius==None):
-                self.points=point_finder('linear',(leg_travel_dist*0.75,-robo_height),leg_travel_dist,num_of_pt,180)
-                # print(self.points)
+                if(self.leg_pos=='hind'):
+                    self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,180)
+                elif self.leg_pos=='front':
+                        self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,0)
+                print(f'Points by mv down of {self.leg_no}',self.points)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
             self.inv_kin_list(self.l1+self.l2,self.l3)
