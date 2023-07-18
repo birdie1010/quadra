@@ -160,6 +160,7 @@ class legjoints:
             for i in range(len(self.points)):
                 hip,knee=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((hip,-knee,ori[i]))
+            self.posi=(self.points[-1][0],self.points[-1][1]+self.l3)
 
         elif(leg_pos=='front'):
             ori=ori_finder(1.57+inih-inik,-1.57,1.57+finh-fink)
@@ -171,20 +172,23 @@ class legjoints:
                 hip,knee=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,knee,ori[i]))
             # self.angles.reverse()
-        self.posi=(self.points[-1][0],self.points[-1][1]+self.l3)
+            self.posi=(-self.points[-1][0],self.points[-1][1]+self.l3)
         # print(f'posi for {self.leg_no}',self.posi)
 
 
     def inv_kin_list(self,len1:float,len2:float):
         leg_pos=self.leg_pos
-        self.posi=(self.points[-1][0],self.points[-1][1])
         if(leg_pos=='hind'):
+            print(f'back pos {self.leg_no} ',self.points)
+            self.posi=(self.points[-1][0],self.points[-1][1])
             for i in range(len(self.points)):
                 # print('hind called')
                 hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((hip,0,ankle))
         elif(leg_pos=='front'):
-            self.points.reverse()
+            print(f'front pos {self.leg_no}',self.points)
+            self.posi=(self.points[-1][0],self.points[-1][1])
+            # self.points.reverse()
             for i in range(len(self.points)):
                 hip,ankle=self.inv_kin_single(self.points[i],len1,len2)
                 self.angles.append((3.14-hip,0,-ankle))
@@ -200,11 +204,11 @@ class legjoints:
 
     def fd_mv_dwn(self,circ_radius=None):
         leg_pos=self.leg_pos
-        position=(leg_travel_dist*0.75,-robo_height)
+        position=(2*leg_travel_dist,-robo_height)
         global joint_states
         if self.posi:
             position=self.posi
-            # print(self.posi)
+            # print(f'Position set for {self.leg_no}')
         if(self.position_no==0):
             self.points.clear()
             self.angles.clear()
@@ -212,8 +216,8 @@ class legjoints:
                 if(self.leg_pos=='hind'):
                     self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,180)
                 elif self.leg_pos=='front':
-                    self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,0)
-                    self.points.reverse()
+                    self.points=point_finder('linear',position,leg_travel_dist,num_of_pt,180)
+                    # self.points.reverse()
                 # print(f'Points by mv down of {self.leg_no}',self.points)
             else:
                 self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
