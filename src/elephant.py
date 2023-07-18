@@ -97,7 +97,7 @@ class legjoints:
             self.points.clear()
             self.angles.clear()
             if(circ_radius==None):
-                self.points=point_finder('circle',(0,robo_height-self.l3),2*leg_travel_dist,num_of_pt)      #circle of diameter 4ltd required. Because duty factor is only 0.25(approx)
+                self.points=point_finder('circle',(0,robo_height-self.l3),leg_travel_dist,num_of_pt)      #circle of diameter 4ltd required. Because duty factor is only 0.25(approx)
             elif(center==None):
                 self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             else:
@@ -204,9 +204,8 @@ class legjoints:
 
     def fd_mv_dwn(self,circ_radius=None):
         leg_pos=self.leg_pos
-        position_h=(2*leg_travel_dist,-robo_height)
-        position_v=(-2*leg_travel_dist,-robo_height)
-        position=(2*leg_travel_dist,-robo_height)
+        position_h=(leg_travel_dist,-robo_height)
+        position_v=(-leg_travel_dist,-robo_height)
         global joint_states
         if self.posi:
             position_v=self.posi
@@ -217,9 +216,9 @@ class legjoints:
             self.angles.clear()
             if(circ_radius==None):
                 if(self.leg_pos=='hind'):
-                    self.points=point_finder('linear',position_h,leg_travel_dist,num_of_pt,180)
+                    self.points=point_finder('linear',position_h,leg_travel_dist*2/3,num_of_pt,180)
                 elif self.leg_pos=='front':
-                    self.points=point_finder('linear',position_v,leg_travel_dist,num_of_pt,0)
+                    self.points=point_finder('linear',position_v,leg_travel_dist*2/3,num_of_pt,0)
                     # self.points.reverse()
                 # print(f'Points by mv down of {self.leg_no}',self.points)
             else:
@@ -247,7 +246,7 @@ class legjoints:
     def ltd_finder(self,height:float) ->float:
         a=(self.l1+self.l2)**2
         b=(height-self.l3)**2
-        l=math.sqrt((a-b)/4)-0.001       #-0.001 for safety otherwise cos may show error.  Arccos(1.00000001) may occur
+        l=math.sqrt((a-b))-0.001       #-0.001 for safety otherwise cos may show error.  Arccos(1.00000001) may occur
         # print(a,b)
         # print('leg travel dist',l)
         return l
