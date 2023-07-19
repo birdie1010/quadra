@@ -8,7 +8,7 @@ from std_msgs.msg import Float64MultiArray
 import time
 import math
 
-num_of_pt=10        #should be even
+num_of_pt=100        #should be even
 leg_travel_dist=1.561    #cannot be independent should be dep on other roboheight. So chnaged later
 robo_height=9
 # a function to give the required number of pts as a list
@@ -99,7 +99,7 @@ class legjoints:
             if(circ_radius==None):
                 self.points=point_finder('circle',(0,robo_height-self.l3),leg_travel_dist,num_of_pt)      #circle of diameter 4ltd required. Because duty factor is only 0.25(approx)
             elif(center==None):
-                self.points=point_finder('circle',(circ_radius,robo_height),circ_radius,num_of_pt)  #for initializing gate a smaller step required
+                self.points=point_finder('circle',(circ_radius,robo_height-self.l3),circ_radius,num_of_pt)  #for initializing gate a smaller step required
             else:
                 self.points=point_finder('circle',center,circ_radius,num_of_pt)  #for turns
             # print(f'Points found Fd mv up for leg{self.leg_no}')
@@ -174,7 +174,6 @@ class legjoints:
             # self.angles.reverse()
             self.posi=(self.points[-1][0],self.points[-1][1]+self.l3)
         # print(f'posi for {self.leg_no}',self.posi)
-
 
     def inv_kin_list(self,len1:float,len2:float):
         leg_pos=self.leg_pos
@@ -265,23 +264,23 @@ class move_fns:
         if(gait_type.lower()=='amble'):
             if(self.contin or self.prev_cycle==self.cycle):
                 self.stop=False  #if comming in after stopping this is required
-                if(self.i==0):      #first step is a smaller step to initialize gait
-                #    self.leg1.fd_mv_up(leg_travel_dist/4)
-                #    self.leg2.fd_mv_dwn(leg_travel_dist/4)
-                #    self.leg3.fd_mv_up(leg_travel_dist/4)
-                #    self.leg4.fd_mv_dwn(leg_travel_dist/4)
-                    pass
                 gait_pos=self.cycle%4
-
-                for j in range(4):
-                    # print(self.i,gait_pos,j)
-                    if(gait_pos==j):
-                        # print(f'leg{self.legs[j].leg_no} moving up')
-                        self.legs[j].fd_mv_up()
-                    else:
-                        # pass
-                        # print(f'leg {j} moving down')
-                        self.legs[j].fd_mv_dwn()
+                if(self.i==0):      #first step is a smaller step to initialize gait
+                   self.legs[0].fd_mv_up(leg_travel_dist/2)
+                   self.legs[1].fd_mv_up(leg_travel_dist/2)
+                   self.legs[1].angles.reverse()
+                   self.legs[2].points=point_finder('circle',(leg_travel_dist/6,robo_height-self.legs[2].l3),leg_travel_dist/6,num_of_pt)
+                   self.legs[2].inv_kin_list_3link(self.legs[2].l1,self.legs[2].l2)
+                else:
+                    for j in range(4):
+                        # print(self.i,gait_pos,j)
+                        if(gait_pos==j):
+                            # print(f'leg{self.legs[j].leg_no} moving up')
+                            self.legs[j].fd_mv_up()
+                        else:
+                            # pass
+                            # print(f'leg {j} moving down')
+                            self.legs[j].fd_mv_dwn()
 
                 self.prev_cycle=self.cycle
                 self.i+=1
@@ -316,7 +315,7 @@ js_real=Float64MultiArray()
 rospy.init_node('joint_state_publisher')
 pub = rospy.Publisher('joint_states', JointState, queue_size=2)
 pub_real=rospy.Publisher('js_real',Float64MultiArray,queue_size=2)
-rate = rospy.Rate(2) # 10hz
+rate = rospy.Rate(20) # 10hz
 
 
 def talker():
