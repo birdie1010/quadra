@@ -132,7 +132,7 @@ class legjoints:
             # s2=math.sqrt(1-(c2**2))
             # theta2=math.atan2(s2,c2)
         else:
-            print(f'Cos value error for c2 on pt ({x},{y})')
+            print(f'Cos value error for c2 on pt ({x},{y}) for {self.leg_no}')
             return None
         A=len1+(len2*c2)
         B=(len2*math.sin(theta2))
@@ -203,8 +203,8 @@ class legjoints:
 
     def fd_mv_dwn(self,circ_radius=None):
         leg_pos=self.leg_pos
-        position_h=(leg_travel_dist,-robo_height)
-        position_v=(-leg_travel_dist,-robo_height)
+        position_h=(0,-robo_height)
+        position_v=(0,-robo_height)
         global joint_states
         if self.posi:
             position_v=self.posi
@@ -221,11 +221,14 @@ class legjoints:
                     # self.points.reverse()
                 # print(f'Points by mv down of {self.leg_no}',self.points)
             else:
-                self.points=point_finder('linear',(0,robo_height),circ_radius,num_of_pt,180)
+                if(self.leg_pos=='hind'):
+                    self.points=point_finder('linear',position_h,circ_radius,num_of_pt,180)
+                elif self.leg_pos=='front':
+                    self.points=point_finder('linear',position_v,circ_radius,num_of_pt,0)
+            # print(f'Points for {self.leg_no} : ',self.points)
             self.inv_kin_list(self.l1+self.l2,self.l3)
             # print(self.angles)
             # self.inv_kin_list(2,10,2)
-            # print('Points : ',self.points)
             # print('angles : ',self.angles)    
         if(self.position_no<len(self.angles)):
             # print(f'in fd mv dwn {self.leg_no}')
@@ -264,13 +267,10 @@ class move_fns:
         if(gait_type.lower()=='amble'):
             if(self.contin or self.prev_cycle==self.cycle):
                 self.stop=False  #if comming in after stopping this is required
-                gait_pos=self.cycle%4
-                if(self.i==0):      #first step is a smaller step to initialize gait
-                   self.legs[0].fd_mv_up(leg_travel_dist/2)
-                   self.legs[1].fd_mv_up(leg_travel_dist/2)
-                   self.legs[1].angles.reverse()
-                   self.legs[2].points=point_finder('circle',(leg_travel_dist/6,robo_height-self.legs[2].l3),leg_travel_dist/6,num_of_pt)
-                   self.legs[2].inv_kin_list_3link(self.legs[2].l1,self.legs[2].l2)
+                gait_pos=(self.cycle%4)
+                if(self.cycle<3):      #first step is a smaller step to initialize gait
+                    self.gait_init()
+                    # pass
                 else:
                     for j in range(4):
                         # print(self.i,gait_pos,j)
@@ -303,6 +303,22 @@ class move_fns:
             #         self.stop=True
             #         self.i=0
             #     print('stopping')
+    def gait_init(self):
+        if(self.cycle==0):
+            self.legs[0].fd_mv_up(3*leg_travel_dist/6)
+            self.legs[1].fd_mv_dwn(leg_travel_dist/3)
+            self.legs[2].fd_mv_dwn(leg_travel_dist/3)
+            self.legs[3].fd_mv_dwn(leg_travel_dist/3)
+        elif(self.cycle==1):
+            self.legs[0].fd_mv_dwn()
+            self.legs[1].fd_mv_up(4*leg_travel_dist/6,(-leg_travel_dist/6,robo_height-self.legs[1].l3))
+            self.legs[2].fd_mv_dwn(leg_travel_dist/3)
+            self.legs[3].fd_mv_dwn(leg_travel_dist/3)
+        elif(self.cycle==2):
+            self.legs[0].fd_mv_dwn()
+            self.legs[1].fd_mv_dwn(leg_travel_dist/3)
+            self.legs[2].fd_mv_up(5*leg_travel_dist/6,(0.5*leg_travel_dist/6,robo_height-self.legs[2].l3))
+            self.legs[3].fd_mv_dwn(leg_travel_dist/3)
 
 
 robo_height = rospy.get_param('robo_height',7.5)
