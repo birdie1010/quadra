@@ -306,7 +306,7 @@ class move_fns:
     def gait_init(self):
         if(self.cycle==0):
             self.legs[0].fd_mv_up(3*leg_travel_dist/6)
-            self.legs[1].fd_mv_dwn(leg_travel_dist/3)
+            self.legs[1].fd_mv_dwn(2*leg_travel_dist/3)
             self.legs[2].fd_mv_dwn(leg_travel_dist/3)
             self.legs[3].fd_mv_dwn(leg_travel_dist/3)
         elif(self.cycle==1):
@@ -320,6 +320,11 @@ class move_fns:
             self.legs[2].fd_mv_up(5*leg_travel_dist/6,(0.5*leg_travel_dist/6,robo_height-self.legs[2].l3))
             self.legs[3].fd_mv_dwn(leg_travel_dist/3)
 
+class custom_dim():
+    def __init__(self, label=None, size=0, stride=0):
+        self.label = label
+        self.size = size
+        self.stride = stride
 
 robo_height = rospy.get_param('robo_height',7.5)
 leg1=legjoints('hind',1)
@@ -329,9 +334,13 @@ leg4=legjoints('front',4)
 joint_states=JointState()
 js_real=Float64MultiArray()
 rospy.init_node('joint_state_publisher')
-pub = rospy.Publisher('joint_states', JointState, queue_size=2)
-pub_real=rospy.Publisher('js_real',Float64MultiArray,queue_size=2)
-rate = rospy.Rate(20) # 10hz
+# pub = rospy.Publisher('joint_states', JointState, queue_size=2)
+pub_real=rospy.Publisher('ele_position_controller/command',Float64MultiArray,queue_size=2)
+rate = rospy.Rate(30) # 10hz
+
+c = custom_dim('', 12, 1)
+js_real.layout.dim =[c]
+js_real.layout.data_offset=0
 
 
 def talker():
@@ -351,12 +360,12 @@ def talker():
         # legs.stop=True
         # legs.turn('right')
         # leg1.fd_mv_dwn('front')
-        # for i in range(8):
-            # js_real.data.append(int(joint_states.position[i]*180/3.14))
+        for i in range(12):
+            js_real.data.append(joint_states.position[i])
         # print(js_real.data)
 
         # print(joint_states)
-        pub.publish(joint_states)
+        # pub.publish(joint_states)
         pub_real.publish(js_real)
         rate.sleep()
 

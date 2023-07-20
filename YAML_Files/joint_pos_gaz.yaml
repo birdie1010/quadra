@@ -1,0 +1,14 @@
+type: "position_controllers/JointGroupPositionController"
+joints:
+  - hip_1
+  - knee_1
+  - ankle_1
+  - hip_2
+  - knee_2
+  - ankle_2  
+  - hip_3
+  - knee_3
+  - ankle_3  
+  - hip_4
+  - knee_4
+  - ankle_4
