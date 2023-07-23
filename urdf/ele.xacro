@@ -9,19 +9,23 @@
             <child link="thigh_${leg_no}"/>
             <axis xyz="0 0 1"/>
             <xacro:insert_block name="origin" />
+            <limit effort="5" velocity="1.0" lower="-3.14159" upper="3.14159"/>
+
         </joint>
         <joint name="knee_${leg_no}" type="revolute">
             <parent link="thigh_${leg_no}"/>
             <child link="calf_${leg_no}"/>
             <axis xyz="0 0 1"/>
-            <limit lower="-3.14159" upper="3.14159" velocity="50.0" effort="1000.0"/>
+            <!-- <limit lower="-3.14159" upper="3.14159" velocity="50.0" effort="1000.0"/> -->
+            <limit effort="5" velocity="1.0" lower="-3.14159" upper="3.14159"/>
+
             <origin xyz="6 0 0" rpy="0 0 0"/>
         </joint> 
         <joint name="ankle_${leg_no}" type="revolute">
             <parent link="calf_${leg_no}"/>
             <child link="foot_${leg_no}"/>
             <axis xyz="0 0 1"/>
-            <limit lower="-3.14159" upper="3.14159" velocity="50.0" effort="1000.0"/>
+            <limit effort="5" velocity="1.0" lower="-3.14159" upper="3.14159"/>
             <origin xyz="4 0 0" rpy="0 0 0"/>
         </joint> 
         <!-- Transmissions -->
@@ -121,6 +125,13 @@
                 <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
             </inertial>
         </link>
+        <gazebo reference="foot_${leg_no}">
+            <mu1 value="200.0"/>
+            <mu2 value="100.0"/>
+            <kp value="10000000.0" />
+            <kd value="1.0" />
+            <material>Gazebo/Grey</material>
+        </gazebo>
     </xacro:macro>
     <!-- fixed frame and link without xacro -->
     <link name="map"/>
@@ -143,8 +154,8 @@
             </geometry>
         </visual>
         <inertial>
-            <mass value="10"/>
-            <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+            <mass value="1000"/>
+            <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
         </inertial>
     </link>
     <!-- leg links with xacro -->
