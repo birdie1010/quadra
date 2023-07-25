@@ -40,17 +40,21 @@ def point_finder(path_type,foci,radius,number_of_pts,theta=None):
 from elephant import legjoints
 
 
-p=point_finder('circle',(0,11.5),1,10)
+p=point_finder('circle',(0,11.5),1,21)
 js=legjoints('hind',1)
 js.fd_mv_up()
 # print(js.angles)
 x=[]
 y=[]
 z=[]
-for i in range(50):
-    x.append(js.angles[i][0])
-    y.append(js.angles[i][1])
-    z.append(js.angles[i][2])
-print(x)
+# for i in range(50):
+#     x.append(js.angles[i][0])
+#     y.append(js.angles[i][1])
+#     z.append(js.angles[i][2])
+# for i in range(21):
+#     x.append(p[i][0])
+#     y.append(p[i][1])
+#     z.append(5)
+print(p)
 print(y)
 print(z)
